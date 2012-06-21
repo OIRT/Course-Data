@@ -1,0 +1,9 @@
+# Eclipse project files
+.project
+.pydevproject
+
+.pyc
+.css
+
+# The main machine-specific settings.py, we include a sample
+settings.py
