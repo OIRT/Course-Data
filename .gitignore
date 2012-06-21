@@ -2,8 +2,8 @@
 .project
 .pydevproject
 
-.pyc
-.css
+*.pyc
+*.css
 
 # The main machine-specific settings.py, we include a sample
 settings.py
