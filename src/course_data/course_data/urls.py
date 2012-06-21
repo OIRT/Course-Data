@@ -4,7 +4,9 @@ from django.conf.urls import patterns, include, url
 # from django.contrib import admin
 # admin.autodiscover()
 
-urlpatterns = patterns('',
+urlpatterns = patterns('data_app.views',
+    url(r'^$', 'index'),
+    
     # Examples:
     # url(r'^$', 'course_data.views.home', name='home'),
     # url(r'^course_data/', include('course_data.foo.urls')),
