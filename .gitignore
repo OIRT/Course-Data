@@ -7,3 +7,7 @@
 
 # The main machine-specific settings.py, we include a sample
 settings.py
+
+# SASS caches
+.sass-cache
+*.sassc
