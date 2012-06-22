@@ -1,13 +1,17 @@
 ## Required Software
 - Python 2.7
-- Django
 - [SASS](http://sass-lang.com/)
+- [MongoDB](http://www.mongodb.org/downloads)
+- [Django MongoDB Engine](http://django-mongodb.org/topics/setup.html)
+
+Be sure not to install the regular Django.  The MongoDB engine requires a special version built for non-relational databases, they describe this on their [setup page](http://django-mongodb.org/topics/setup.html).
+
 
 ## Handling settings.py
 
 We've included a sample `settings.py` file (named `settings.sample`) to get you started on getting the settings straightened out for your computer.
 
-**Be sure to insert a randomly generated key under `SECRET_KEY`in your settings.py!**
+**Be sure to insert a randomly generated key under `SECRET_KEY`in your `settings.py`!**
 
 ## Rendering Views
 
