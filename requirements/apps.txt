@@ -1,0 +1,3 @@
+-e hg+https://bitbucket.org/wkornewald/django-nonrel#egg=Django
+-e hg+https://bitbucket.org/wkornewald/djangotoolbox#egg=DjangoToolBox
+-e git+https://github.com/django-nonrel/mongodb-engine#egg=MongoDB-Engine
