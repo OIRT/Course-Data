@@ -1,5 +1,5 @@
 ## Required Software
-- Python 2.7
+- Python 2.6 (or 2.7)
 - [SASS](http://sass-lang.com/)
 - [MongoDB](http://www.mongodb.org/downloads)
 - [Django MongoDB Engine](http://django-mongodb.org/topics/setup.html)
