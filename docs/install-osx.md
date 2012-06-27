@@ -13,3 +13,10 @@ Some of these things might exist from OS X, but if you're installing a more rece
 5. Install Django in that environment: `pip install Django`
 
 6. Install Mongoengine in that environment: `pip install mongoengine`
+
+
+If you plan to use Eclipse with this setup, I recommend the following:
+
+1. Install [PyDev](http://pydev.org/download.html).
+
+2. Configure the Python Interpreter to point to the virtualenv that you created earlier. (Eclipse -> Preferences -> PyDev -> Interpreter - Python)
