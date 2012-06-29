@@ -1,0 +1,19 @@
+<table id="userTable" cellpadding="0" cellspacing="0" border="0" >
+    <thead>
+        <tr>
+            {% for v in vars %}
+            <th class="f_field f_{{v}}">{{ v }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for vals in valsList %}
+        <tr>
+            {% for v in vals %}
+                <td>{{ v }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

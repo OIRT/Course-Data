@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/jquery-ui-1.8.21.custom.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd-base.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/plain.css" />
+        <link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.1/css/jquery.dataTables_themeroller.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}data_app/css/style.css" />
+
+
+        <script language="javascript" src="{{ STATIC_URL }}lib/jquery-1.7.2.min.js" ></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/jquery-ui-1.8.21.custom.min.js" ></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/jquery.ui.ufd.min.js" ></script>
+        <script language="javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.1/jquery.dataTables.js"></script>
+        <script language="javascript" src="http://datatables.net/download/build/ColReorder.js"></script>
+        <script langauge="javascript" src="{{ STATIC_URL }}data_app/js/query.js" ></script>
+    </head>
+
+    <body>
+        <label for="query">Query:</label>
+        <select id="notOperator">
+            <option> </option>
+            <option>!</option>
+        </select>
+
+        <select id="querySelect">
+            <option selected="selected"></option>
+        </select>
+        <select id="queryOperator">
+            <option class="num">&lt;</option>
+            <option class="num">&gt;</option>
+            <option class="num">=</option>
+            <option class="num">&lt;=</option>
+            <option class="num">&gt;=</option>
+
+            <option class="text">equals</option>
+            <option class="text">contains</option>
+            <option class="text">startsWith</option>
+        </select>
+        <input type="text" name="query" id="query" />
+        <br />
+        <hr />
+        <br />
+
+        <div id="result"></div>
+    </body>
+</html>
