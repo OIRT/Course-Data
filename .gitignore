@@ -7,7 +7,10 @@
 
 # The main machine-specific settings.py, we include a sample
 settings.py
+settings_production.py
 
 # SASS caches
 .sass-cache
 *.sassc
+
+localfab.py
