@@ -31,3 +31,28 @@ class User(Document):
     student_data = EmbeddedDocumentField(Student)
 
     meta = {'allow_inheritance': False}
+
+
+class Grade(EmbeddedDocument):
+    rcpid = IntField()
+    eid = StringField()
+    enteredgrade = StringField()
+    points = FloatField()
+
+    meta = {'allow_inheritance': False}
+
+
+class GradebookItem(EmbeddedDocument):
+    name = StringField()
+    grades = ListField(EmbeddedDocumentField(Grade))
+    pointspossible = FloatField()
+
+    meta = {'allow_inheritance': False}
+
+
+class Gradebook(Document):
+    gradebook = StringField()
+    sections = ListField(StringField())
+    items = ListField(EmbeddedDocumentField(GradebookItem))
+
+    meta = {'allow_inheritance': False}
