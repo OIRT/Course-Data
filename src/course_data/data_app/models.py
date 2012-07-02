@@ -19,18 +19,18 @@ class Course(EmbeddedDocument):
 
 
 class Users(Document):
-	firstname = StringField()
-	lastname = StringField()
-	nickname = StringField()
-	email = EmailField()
-	roles = ListField(StringField())
-	ruid = StringField()
-	netid = StringField()
-	rcpid = IntField()
-	courses = ListField(EmbeddedDocumentField(Course))
-	student_data = EmbeddedDocumentField(Student)
-	
-	meta = {'allow_inheritance': False}
-	
-	def __unicode__(self):
-		return "<User: %s>" % self.netid
+    firstname = StringField()
+    lastname = StringField()
+    nickname = StringField()
+    email = EmailField()
+    roles = ListField(StringField())
+    ruid = StringField()
+    netid = StringField()
+    rcpid = IntField()
+    courses = ListField(EmbeddedDocumentField(Course))
+    student_data = EmbeddedDocumentField(Student)
+    
+    meta = {'allow_inheritance': False}
+    
+    def __unicode__(self):
+        return "<User: %s>" % self.netid
