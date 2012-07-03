@@ -39,6 +39,12 @@ class Grade(EmbeddedDocument):
     enteredgrade = StringField()
     points = FloatField()
 
+    def getGrade(self):
+        if self.enteredgrade is None:
+            return self.points
+        else:
+            return self.enteredgrade
+
     meta = {'allow_inheritance': False}
 
 
