@@ -1,18 +1,18 @@
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/jquery-ui-1.8.21.custom.css" />
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd-base.css" />
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/plain.css" />
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/jquery.dataTables.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/jquery/jquery-ui-1.8.21.custom.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd/ufd-base.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd/plain.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/dataTables/jquery.dataTables.css" />
 
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}data_app/css/style.css" />
 
 
-        <script language="javascript" src="{{ STATIC_URL }}lib/jquery-1.7.2.min.js" ></script>
-        <script language="javascript" src="{{ STATIC_URL }}lib/jquery-ui-1.8.21.custom.min.js" ></script>
-        <script language="javascript" src="{{ STATIC_URL }}lib/jquery.ui.ufd.js" ></script>
-        <script language="javascript" src="{{ STATIC_URL }}lib/jquery.dataTables.min.js"></script>
-        <script language="javascript" src="http://datatables.net/download/build/ColReorder.js"></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/jquery/jquery-1.7.2.min.js" ></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/jquery/jquery-ui-1.8.21.custom.min.js" ></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/ufd/jquery.ui.ufd.js" ></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/dataTables/jquery.dataTables.min.js"></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/dataTables/ColReorder.min.js"></script>
         <script langauge="javascript" src="{{ STATIC_URL }}data_app/js/query.js" ></script>
     </head>
 
@@ -21,7 +21,7 @@
             Display entries that meet
             <select id="andVor">
                 <option>all</option>
-                <option>some</option>
+                <option>any</option>
             </select>
             of these criteria:
         </div>

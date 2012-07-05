@@ -3,7 +3,7 @@
 .pydevproject
 
 *.pyc
-*.css
+src/course_data/data_app/static/data_app/css/*.css
 
 # The main machine-specific settings.py, we include a sample
 settings.py
