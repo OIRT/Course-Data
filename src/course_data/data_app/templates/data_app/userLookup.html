@@ -13,6 +13,8 @@
         <script language="javascript" src="{{ STATIC_URL }}lib/ufd/jquery.ui.ufd.js" ></script>
         <script language="javascript" src="{{ STATIC_URL }}lib/dataTables/jquery.dataTables.min.js"></script>
         <script language="javascript" src="{{ STATIC_URL }}lib/dataTables/ColReorder.min.js"></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/canjs/can.jquery-1.0.7.js"></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/canjs/can.fixture.js"></script>
         <script langauge="javascript" src="{{ STATIC_URL }}data_app/js/query.js" ></script>
     </head>
 
@@ -25,33 +27,9 @@
             </select>
             of these criteria:
         </div>
-        <div class="hiddenQuery" style="display:none;">
-            <div class="queryDiv">
-                <select class="notOperator">
-                    <option> </option>
-                    <option>!</option>
-                </select>
 
-                <select class="querySelect">
-                    <option selected="selected"></option>
-                </select>
-                <select class="queryOperator">
-                    <option class="num">&lt;</option>
-                    <option class="num">&gt;</option>
-                    <option class="num">=</option>
-                    <option class="num">&lt;=</option>
-                    <option class="num">&gt;=</option>
+        <div id="filterDivContainer" style="margin-left: 30px"></div>
 
-                    <option class="text">equals</option>
-                    <option class="text">contains</option>
-                    <option class="text">startsWith</option>
-                </select>
-                <input type="text" name="query" class="query" />
-            </div>
-        </div>
-        <div class="queryDivContainer" style="margin-left: 30px">
-
-        </div>
         <div id="buttonDiv" style="margin-top:30px">
             <button type="button" onclick="recalculateTable(); return false;">Recalculate Filters</button>
             <button type="button" onclick="addNew(); return false;">Add New Filter</button>

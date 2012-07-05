@@ -1,0 +1,10 @@
+
+<ul class="filterContainer">
+    <% list(filters, function(filter) { %>
+        <li class="filterItem" <%= (el)-> el.data('filter', filter) %>>
+            <%== can.view.render('static/data_app/views/filterView.ejs', {
+                filter: filter
+            }) %>
+        </li>
+    <% }) %>
+</ul>

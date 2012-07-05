@@ -1,0 +1,27 @@
+<div class="filterDiv">
+    <select class="notOperator">
+        <option> </option>
+        <option>!</option>
+    </select>
+
+    <select class="filterSelect">
+        <option selected="selected"></option>
+        <% aoColumns = masterDataTable.fnSettings().aoColumns;
+        for(var c in aoColumns) { %>
+            <option <%= "value=\"" + aoColumns[c].sTitle + "\"" %>><%= aoColumns[c].sTitle %></option>
+        <% } %>
+        <script language="javascript">$(".filterSelect").ufd();</script>
+    </select>
+    <select class="filterOperator">
+        <option class="num">&lt;</option>
+        <option class="num">&gt;</option>
+        <option class="num">=</option>
+        <option class="num">&lt;=</option>
+        <option class="num">&gt;=</option>
+
+        <option class="text">equals</option>
+        <option class="text">contains</option>
+        <option class="text">startsWith</option>
+    </select>
+    <input type="text" name="filterText" class="filterText" <%= "value='" + filter.attr('text') + "'"%> />
+</div>
