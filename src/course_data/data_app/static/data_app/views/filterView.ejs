@@ -1,27 +1,24 @@
 <div class="filterDiv">
     <select class="notOperator">
-        <option> </option>
-        <option>!</option>
+        <option <%= filter.attr('not') === false? "selected='selected'" : "" %>> </option>
+        <option <%= filter.attr('not') === true? "selected='selected'" : "" %>>!</option>
     </select>
 
-    <select class="filterSelect">
-        <option selected="selected"></option>
+    <select class="filterSelect" <%= "value='" + filter.attr('selection') + "'" %>>
+        <option></option>
         <% aoColumns = masterDataTable.fnSettings().aoColumns;
         for(var c in aoColumns) { %>
-            <option <%= "value=\"" + aoColumns[c].sTitle + "\"" %>><%= aoColumns[c].sTitle %></option>
+            <option <%= "value=\"" + aoColumns[c].sTitle + "\"" %>
+                <% if(aoColumns[c].sTitle === filter.attr('selection')) { %>
+                    selected="selected"
+                <% } %>><%= aoColumns[c].sTitle %></option>
         <% } %>
-        <script language="javascript">$(".filterSelect").ufd();</script>
     </select>
     <select class="filterOperator">
-        <option class="num">&lt;</option>
-        <option class="num">&gt;</option>
-        <option class="num">=</option>
-        <option class="num">&lt;=</option>
-        <option class="num">&gt;=</option>
-
-        <option class="text">equals</option>
-        <option class="text">contains</option>
-        <option class="text">startsWith</option>
+        <% var options = ['<', '>', '=', '<=', '>=', 'equals', 'contains', 'startsWith'];
+            for(option in options) { %>
+                <option class="num" <%= filter.attr('operator') === options[option]? "selected='selected'" : "" %>><%= options[option] %></option>
+            <% } %>
     </select>
     <input type="text" name="filterText" class="filterText" <%= "value='" + filter.attr('text') + "'"%> />
 

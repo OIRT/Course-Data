@@ -42,10 +42,6 @@ function calculateIndexNums() {
     }
 }
 
-function addNew() {
-    new Filter({"text": ""}).save();
-}
-
 $(function() {
     $("#result").load("/users", function() {
         masterDataTable = $("#userTable").dataTable({
@@ -88,72 +84,73 @@ $(function() {
             }
         );
 
-        Filters = can.Control({
-            init: function() {
+        FiltersControl = can.Control({
+            init: function(element, options) {
                 this.element.html(can.view('static/data_app/views/filterList.ejs', {
                     filters: this.options.filters
                 }));
                 $(".filterSelect").ufd();
             },
 
-            '{Filter} created': function(list, ev, filter) {
-                this.options.filters.push(filter);
-                $(".filterSelect").ufd();
+            '.notOperator change': function(el, ev) {
+                var index = this.findIndex(el);
+                this.options.filters[index].attr("not", (el.val() === "!"));
             },
 
-            '.filterText keypress': function(el, event) {
-                if(event.keyCode == 13) {
+            '.ufd select change': function(el, ev) {
+                var index = this.findIndex(el);
+                this.options.filters[index].attr("selection", el.val());
+            },
+
+            '.filterOperator change': function(el, ev) {
+                var index = this.findIndex(el);
+                this.options.filters[index].attr("operator", el.val());
+            },
+
+            '.filterText keyup': function(el, ev) {
+                if(ev.keyCode == 13) {
                     masterDataTable.fnDraw();
+                } else {
+                    var index = this.findIndex(el);
+                    this.options.filters[index].attr("text", el.val());
                 }
             },
 
             '.deleteFilter click': function(el, ev) {
-                el.closest('.filterItem').data('filter').destroy();
+                var index = this.findIndex(el);
+                this.options.filters.splice(index, 1);
+                $(".filterSelect").ufd();
+            },
+
+            findIndex: function(el) {
+                return $('.filterItem').index(el.closest('.filterItem'));
             }
         });
 
-        Filter = can.Model({
-            findAll: "GET /filters",
-            create: "POST /filters",
-            update: "PUT /filters/{id}",
-            destroy: "DELETE /filters/{id}"
-        }, {});
-
-        var FILTERS = [
+        var filters = new can.Observe.List([
             {
-                id: 1,
-                text: "40"
+                not: false,
+                selection: "Budget Assignment",
+                operator: "<=",
+                text: "4"
             },
             {
-                id: 2,
-                text: "50"
+                not: true,
+                selection: "Internal Control Assignment",
+                operator: ">",
+                text: "2"
             }
-        ];
+        ]);
 
-        can.fixture("GET /filters", function() {
-            return FILTERS;
+        new FiltersControl('#filterDivContainer', {
+            filters: filters
         });
 
-        id = 5;
-        can.fixture("POST /filters", function() {
-            return {id: (id++)};
+        $("#newFilter").bind("click", function() {
+            filters.push({not: false, "selection": "", operator: "<", "text": ""});
+            $(".filterSelect").ufd();
         });
 
-        can.fixture("PUT /filters/{id}", function() {
-            return {};
-        });
-
-        can.fixture("DELETE /filters/{id}", function() {
-            alert("Blah");
-            return {};
-        });
-
-        $.when(Filter.findAll()).then(
-            function(filterResponse) {
-                new Filters('#filterDivContainer', {
-                    filters: filterResponse
-                });
-            }
-        );
+        masterDataTable.fnDraw();
     });
 });
