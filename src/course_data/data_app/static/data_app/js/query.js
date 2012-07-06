@@ -1,4 +1,5 @@
 var masterDataTable = null;
+var indexNums;
 
 function compareValues(a, b, operator) {
     if( operator === "<" && parseFloat(a) < parseFloat(b) ||
@@ -33,14 +34,12 @@ function checkCondition(oSettings, aData, iDataIndex, topLevel) {
     }
 }
 
-function recalculateTable() {
+function calculateIndexNums() {
     oSettings = masterDataTable.fnSettings();
     indexNums = new Array(oSettings.aoColumns.length);
     for(i = 0; i < indexNums.length; i++) {
         indexNums[oSettings.aoColumns[i].sTitle] = i;
     }
-
-    masterDataTable.fnDraw();
 }
 
 function addNew() {
@@ -48,8 +47,6 @@ function addNew() {
 }
 
 $(function() {
-    var indexNums;
-
     $("#result").load("/users", function() {
         masterDataTable = $("#userTable").dataTable({
             "bJQueryUI": true,
@@ -68,6 +65,7 @@ $(function() {
 
         $.fn.dataTableExt.afnFiltering.push(
             function(oSettings, aData, iDataIndex) {
+                calculateIndexNums();
                 andVor = $("#andVor").val() === "all";
 
                 if(andVor) {
@@ -105,14 +103,20 @@ $(function() {
 
             '.filterText keypress': function(el, event) {
                 if(event.keyCode == 13) {
-                    recalculateTable();
+                    masterDataTable.fnDraw();
                 }
+            },
+
+            '.deleteFilter click': function(el, ev) {
+                el.closest('.filterItem').data('filter').destroy();
             }
         });
 
         Filter = can.Model({
             findAll: "GET /filters",
-            create: "POST /filters"
+            create: "POST /filters",
+            update: "PUT /filters/{id}",
+            destroy: "DELETE /filters/{id}"
         }, {});
 
         var FILTERS = [
@@ -133,6 +137,15 @@ $(function() {
         id = 5;
         can.fixture("POST /filters", function() {
             return {id: (id++)};
+        });
+
+        can.fixture("PUT /filters/{id}", function() {
+            return {};
+        });
+
+        can.fixture("DELETE /filters/{id}", function() {
+            alert("Blah");
+            return {};
         });
 
         $.when(Filter.findAll()).then(
