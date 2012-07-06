@@ -127,23 +127,41 @@ $(function() {
             }
         });
 
-        var filters = new can.Observe.List([
-            {
-                not: false,
-                selection: "Budget Assignment",
-                operator: "<=",
-                text: "4"
-            },
-            {
-                not: true,
-                selection: "Internal Control Assignment",
-                operator: ">",
-                text: "2"
+        AndVOrControl  = can.Control({
+            init: function(element, options) {
+                this.element.html(can.view('static/data_app/views/andVor.ejs', {
+                    andVor: this.options.andVor
+                }));
             }
-        ]);
+        });
+
+        var workspace = {
+            "andVor": "and",
+            "filters": [
+                {
+                    not: false,
+                    selection: "Budget Assignment",
+                    operator: "<=",
+                    text: "4"
+                },
+                {
+                    not: true,
+                    selection: "Internal Control Assignment",
+                    operator: ">",
+                    text: "2"
+                }
+            ]
+        };
+
+        var filters = new can.Observe.List(workspace.filters);
+        var andVor = new can.Observe().attr("andVor", workspace.andVor);
 
         new FiltersControl('#filterDivContainer', {
             filters: filters
+        });
+
+        new AndVOrControl('#andVorDiv', {
+            andVor: andVor
         });
 
         $("#newFilter").bind("click", function() {

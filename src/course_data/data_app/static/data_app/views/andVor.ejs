@@ -1,0 +1,6 @@
+Display entries that meet
+    <select id="andVor">
+        <option <%= (andVor.attr("andVor") === "and")? "selected='selected'" : "" %>>all</option>
+        <option <%= (andVor.attr("andVor") === "or")? "selected='selected'" : "" %>>any</option>
+    </select>
+of these criteria:

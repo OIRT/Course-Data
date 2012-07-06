@@ -1,5 +1,7 @@
 <html>
     <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/jquery/jquery-ui-1.8.21.custom.css" />
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd/ufd-base.css" />
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd/plain.css" />
@@ -19,16 +21,9 @@
     </head>
 
     <body>
-        <div id="andVorDiv">
-            Display entries that meet
-            <select id="andVor">
-                <option>all</option>
-                <option>any</option>
-            </select>
-            of these criteria:
-        </div>
+        <div id="andVorDiv"></div>
 
-        <div id="filterDivContainer" style="margin-left: 30px"></div>
+        <div id="filterDivContainer"></div>
 
         <div id="buttonDiv" style="margin-top:30px">
             <button type="button" onclick="masterDataTable.fnDraw(); return false;">Recalculate Filters</button>
