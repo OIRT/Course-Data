@@ -19,6 +19,7 @@ class Course(EmbeddedDocument):
 
 
 class Users(Document):
+    id = ObjectIdField()
     firstname = StringField()
     lastname = StringField()
     nickname = StringField()

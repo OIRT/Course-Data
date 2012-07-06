@@ -1,7 +1,7 @@
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response, render
 from django.template.context import RequestContext
-from mongohelpers import get_document_or_404
+from mongohelpers import get_document_or_404, documents_to_json
 from data_app.models import Users
 
 def index(request):
@@ -10,8 +10,14 @@ def index(request):
 def data_index(request):
     return render(request, 'data_app/index.html')
 
+
 def fetch_many_users(request, retformat=""):
     context = {}
+    # For now just return 100 users, eventually this will be based on submitted parameters
+    users = Users.objects.limit(100)
+    if retformat == 'json':
+        context['json'] = documents_to_json(users)
+        return render(request, 'data_app/json_template',context)
     context["retformat"] = retformat
     count = Users.objects.count()
     context["count"] = count
@@ -21,6 +27,9 @@ def fetch_one_user(request, attr, id, retformat=""):
     context = {}
     filter = { attr : id }	
     user = get_document_or_404(Users, **filter)
+    if retformat == 'json':
+        context['json'] = documents_to_json(user)
+        return render(request,'data_app/json_template', context)
     context["retformat"] = retformat
     context["attribute"] = attr
     context["id"] = id
