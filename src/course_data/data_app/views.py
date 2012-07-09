@@ -35,3 +35,12 @@ def fetch_one_user(request, attr, id, retformat=""):
     context["id"] = id
     context["user"] = user
     return render(request, 'data_app/one_user.html', context)
+
+def fetch_workspace_users(request, wid):
+    pass
+    
+def workspace(request, wid):
+    pass
+    
+def create_workspace(request):
+    pass
