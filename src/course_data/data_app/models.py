@@ -35,3 +35,13 @@ class Users(Document):
     
     def __unicode__(self):
         return "<User: %s>" % self.netid
+
+
+class Workspace(Document):
+    id = ObjectIdField()
+    name = StringField(required=True)
+    owners = ListField(ReferenceField(Users),required=True)
+    rosters = ListField(StringField())
+    extras = ListField(ReferenceField(Users))
+    display = DictField()
+    
