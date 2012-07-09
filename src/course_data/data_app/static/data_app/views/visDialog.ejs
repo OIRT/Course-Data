@@ -1,0 +1,11 @@
+<div id="visDialog">
+    <ul id="visList">
+        <% list(columns, function(column) { %>
+            <li>
+                <input type="checkbox" class="colVisCheckbox" <%= "id=\"vis-" + column.sTitle + "\" name=\"" + column.sTitle + "\" " + (column.bVisible? "checked=\"checked\"" : "")%>></input>
+                <label <%= "for=\"vis-" + column.sTitle + "\"" %>><%= column.sTitle %></label>
+            </li>
+        <% }); %>
+    </ul>
+</div>
+<button id="visDialogButton" class=".ui-button">Show / Hide Columns</button>
