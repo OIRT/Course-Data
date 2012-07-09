@@ -45,3 +45,5 @@ class Workspace(Document):
     extras = ListField(ReferenceField(Users))
     display = DictField()
     
+    def __unicode__(self):
+        return "<%s>" % self.name
