@@ -49,7 +49,7 @@ function updateColumnVisibility() {
     });
 }
 
-$(function() {
+$(document).ready(function() {
     $("#result").load("/users", function() {
         masterDataTable = $("#userTable").dataTable({
             "bJQueryUI": true,
@@ -57,7 +57,6 @@ $(function() {
             "bScrollXInner": true,
             "sScrollX": "100%",
             "bScrollAutoCss": true
-//            "bPaginate": false
         });
 
         $.fn.dataTableExt.afnFiltering.push(
@@ -101,13 +100,6 @@ $(function() {
             '.ufd select change': function(el, ev) {
                 var index = this.findIndex(el);
                 this.options.filters[index].attr("selection", el.val());
-
-                // If the variable selected isn't visible, show it.
-                calculateIndexNums();
-                column = masterDataTable.fnSettings().aoColumns[indexNums[el.val()]];
-                if(!column.bVisible) {
-                    masterDataTable.fnSetColumnVis(indexNums[el.val()], true);
-                }
             },
 
             '.filterOperator change': function(el, ev) {
@@ -128,6 +120,7 @@ $(function() {
                 var index = this.findIndex(el);
                 this.options.filters.splice(index, 1);
                 $(".filterSelect").ufd();
+                masterDataTable.fnStandingRedraw();
             },
 
             findIndex: function(el) {
@@ -217,12 +210,21 @@ $(function() {
                     modal: true,
                     draggable: false,
                     minWidth: 500,
-                    title: "Show / Hide Columns"
+                    title: "Show / Hide Columns",
+                    show: { effect: "fade", speed: 1000 },
+                    hide: { effect: "fade", speed: 1000 }
                 });
             },
 
             '#visDialogButton click': function() {
                 $("#visDialog").dialog('open');
+            },
+
+            '#visDialog close': function() {
+                calculateIndexNums();
+                $(".colVisCheckbox").each(function() {
+                    masterDataTable.fnSetColumnVis(indexNums[$(this).attr("name")], $(this).attr("checked") === "checked");
+                });
             }
         });
 
@@ -231,15 +233,15 @@ $(function() {
             "filters": [
                 {
                     "not": false,
-                    "selection": "Budget Assignment",
+                    "selection": "Lab 1 Density",
                     "operator": "<=",
-                    "text": "4"
+                    "text": "40"
                 },
                 {
                     "not": true,
-                    "selection": "Internal Control Assignment",
+                    "selection": "Final Exam",
                     "operator": ">",
-                    "text": "2"
+                    "text": "200"
                 }
             ],
             "columns": [
@@ -247,12 +249,13 @@ $(function() {
                 "firstname",
                 "netid",
                 "email",
-                "Course Grade",
-                "Budget Assignment",
-                "Internal Control Assignment",
-                "Investment Assignment",
-                "Financial Statement Analysis"
-            ]
+                "Lab 1 Density",
+                "Final Exam"
+            ],
+            "sorting": {
+                "column": "lastname",
+                "direction": "asc"
+            }
         };
 
         var filters = new can.Observe.List(workspace.filters);
@@ -276,6 +279,22 @@ $(function() {
         $("#newFilter").bind("click", function() {
             filters.push({not: false, "selection": "", operator: "<", "text": ""});
             $(".filterSelect").ufd();
+        });
+
+        // Restore sorting order from workspace
+        calculateIndexNums();
+        var settings = masterDataTable.fnSettings();
+        settings.aaSorting[0][0] = indexNums[workspace.sorting.column];
+        settings.aaSorting[0][1] = workspace.sorting.direction;
+        settings.aaSorting[0][2] = workspace.sorting.direction === "asc"? 0 : 1;
+
+        masterDataTable.bind('sort', function() {
+            var sortData = settings.aaSorting[0];
+            if(workspace.sorting.column !== settings.aoColumns[sortData[0]].sTitle ||
+                    workspace.sorting.direction !== sortData[2]) {
+                workspace.sorting.column = settings.aoColumns[sortData[0]].sTitle;
+                workspace.sorting.direction = sortData[2];
+            }
         });
 
         masterDataTable.fnDraw();

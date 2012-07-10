@@ -1,3 +1,4 @@
+// Put UFD in-line with text (it typically appears a bit high)
 .ufd
     top: 8px
     left: 0px
@@ -5,13 +6,16 @@
 .fg-toolbar
     padding: 5px
 
+// Indent the filters a bit
 #filterDivContainer
     padding-left: 30px
 
+// IE was causing weird problems with the dropdown without this
 .filterDiv
     padding: 0px
     margin: 0px
 
+// Ensure that the lists don't actually look like lists
 .filterContainer, #visList
     list-style-type: none
     padding: 0
@@ -22,6 +26,7 @@
     padding: 0
     margin: 0
 
+// Move the sort icon up next to the text, where it belongs
 .DataTables_sort_icon
     display: inline-block
     position: relative
