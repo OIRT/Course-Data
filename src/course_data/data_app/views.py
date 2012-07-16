@@ -1,8 +1,10 @@
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response, render
 from django.template.context import RequestContext
-from mongohelpers import get_document_or_404, documents_to_json
+from mongohelpers import get_document_or_404, documents_to_json, json_to_document
 from data_app.models import Users, Workspace
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 def index(request):
     return render_to_response('data_app/index.html', {}, context_instance=RequestContext(request))
@@ -48,7 +50,7 @@ def fetch_workspace_users(request, wid):
         jsonstr = documents_to_json(students)
     context['json'] = jsonstr
     return render(request, 'data_app/json_template', context)
-    
+
 def workspace(request, wid):
     context = {}
     if request.method == "GET":
@@ -56,7 +58,16 @@ def workspace(request, wid):
         context['json'] = documents_to_json(ws)
         return render(request, 'data_app/json_template', context)
     elif request.method == "POST":
-        pass # TODO: update the workspace
+        ws, created = json_to_document(Workspace, request.raw_post_data)
+        if created:
+            return HttpResponse(status=201)
+        else:
+            return HttpResponse(status=200)
 
+@require_POST            
 def create_workspace(request):
-    pass
+    ws, created = json_to_document(Workspace, request.raw_post_data)
+    if created:
+        return HttpResponse(status=201)
+    else:
+        return HttpResponse(status=200)
