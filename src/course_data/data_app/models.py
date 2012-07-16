@@ -40,9 +40,9 @@ class Users(Document):
 class Workspace(Document):
     id = ObjectIdField()
     name = StringField(required=True)
-    owners = ListField(ReferenceField(Users),required=True)
+    owners = ListField(StringField(),required=True)
     rosters = ListField(StringField())
-    extras = ListField(ReferenceField(Users))
+    extras = ListField(StringField())
     display = DictField()
     
     def __unicode__(self):
