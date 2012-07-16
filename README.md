@@ -2,11 +2,8 @@
 - Python 2.6 (or 2.7)
 - [SASS](http://sass-lang.com/)
 - [MongoDB](http://www.mongodb.org/downloads)
-- [Django MongoDB Engine](http://django-mongodb.org/topics/setup.html)
+- [Mongoengine](http://mongoengine.org/)
 - [Fabric](http://fabfile.org/) (to automatically deploy to a remote server)
-
-Be sure not to install the regular Django.  The MongoDB engine requires a special version built for non-relational databases, they describe this on their [setup page](http://django-mongodb.org/topics/setup.html).
-
 
 ## Handling settings.py
 
