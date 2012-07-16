@@ -52,12 +52,12 @@ def data_index(request):
 def fetch_many_users(request, retformat=""):
     context = {}
     # For now just return 100 users, eventually this will be based on submitted parameters
-    users = Users.objects.limit(100)
+    users = User.objects.limit(100)
     if retformat == 'json':
         context['json'] = documents_to_json(users)
         return render(request, 'data_app/json_template', context)
     context["retformat"] = retformat
-    count = Users.objects.count()
+    count = User.objects.count()
     context["count"] = count
     return render(request, 'data_app/many_users.html', context)
 
@@ -65,7 +65,7 @@ def fetch_many_users(request, retformat=""):
 def fetch_one_user(request, attr, id, retformat=""):
     context = {}
     filter = { attr : id }
-    user = get_document_or_404(Users, **filter)
+    user = get_document_or_404(User, **filter)
     if retformat == 'json':
         context['json'] = documents_to_json(user)
         return render(request, 'data_app/json_template', context)
@@ -79,7 +79,7 @@ def fetch_one_user(request, attr, id, retformat=""):
 def fetch_workspace_users(request, wid):
     context = {}
     ws = get_document_or_404(Workspace, id=wid)
-    students = Users.objects(courses__id__in=ws.rosters)
+    students = User.objects(courses__id__in=ws.rosters)
     extras = ws.extras
     if len(extras):
         jsonstr = "[ %s, %s ]" % (documents_to_json(students, brackets=False),
@@ -102,4 +102,3 @@ def workspace(request, wid):
 
 def create_workspace(request):
     pass
-

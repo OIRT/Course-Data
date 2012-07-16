@@ -18,7 +18,7 @@ class Course(EmbeddedDocument):
     meta = {'allow_inheritance': False}
 
 
-class Users(Document):
+class User(Document):
     id = ObjectIdField()
     firstname = StringField()
     lastname = StringField()
@@ -31,7 +31,7 @@ class Users(Document):
     courses = ListField(EmbeddedDocumentField(Course))
     student_data = EmbeddedDocumentField(Student)
 
-    meta = {'allow_inheritance': False}
+    meta = {'allow_inheritance': False, 'collection': 'users'}
 
     def __unicode__(self):
         return "<User: %s>" % self.netid
@@ -71,10 +71,12 @@ class Gradebook(Document):
 class Workspace(Document):
     id = ObjectIdField()
     name = StringField(required=True)
-    owners = ListField(ReferenceField(Users), required=True)
+    owners = ListField(ReferenceField(User), required=True)
     rosters = ListField(StringField())
-    extras = ListField(ReferenceField(Users))
+    extras = ListField(ReferenceField(User))
     display = DictField()
+
+    meta = {'allow_inheritance': False}
 
     def __unicode__(self):
         return "<%s>" % self.name
