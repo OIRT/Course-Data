@@ -1,6 +1,10 @@
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.shortcuts import render_to_response, render
 from django.template.context import RequestContext
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.mail import send_mail
+from django.utils import simplejson
+from django.template import Template, Context
 from mongohelpers import get_document_or_404, documents_to_json
 from data_app.models import *
 
@@ -41,6 +45,7 @@ def users(request):
     return render_to_response('data_app/users.html', {'vars': members, 'valsList': list})
 
 
+@ensure_csrf_cookie
 def userLookup(request):
     return render_to_response('data_app/userLookup.html', {}, context_instance=RequestContext(request))
 
@@ -91,14 +96,19 @@ def fetch_workspace_users(request, wid):
 
 
 def workspace(request, wid):
-    context = {}
     if request.method == "GET":
         ws = get_document_or_404(Workspace, id=wid)
-        context['json'] = documents_to_json(ws)
-        return render(request, 'data_app/json_template', context)
+        return HttpResponse(documents_to_json(ws), mimetype="application/json")
     elif request.method == "POST":
         pass  # TODO: update the workspace
 
 
 def create_workspace(request):
     pass
+
+
+def send_emails(request):
+    template = Template(request.POST["body"])
+    context = Context({"firstname": "Eric", "lastname": "Jeney"})
+    send_mail(request.POST["subject"], template.render(context), "someone@else.com", ["emjeney@gmail.com"], fail_silently=False)
+    return HttpResponse(simplejson.dumps({"results": request.POST["subject"]}), mimetype="application/json")

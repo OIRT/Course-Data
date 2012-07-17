@@ -17,4 +17,5 @@ urlpatterns = patterns('data_app.views',
     url(r'^data/users/workspace/(?P<wid>[0-9a-f]+)/$', 'fetch_workspace_users'),
     url(r'^data/workspace/$', 'create_workspace'),
     url(r'^data/workspace/(?P<wid>[0-9a-f]+)/$', 'workspace'),
+    url(r'^data/email$', 'send_emails'),
 )

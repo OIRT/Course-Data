@@ -219,79 +219,101 @@ function tableInitialized() {
         }
     });
 
-    var workspace = {
-        "andVor": "and",
-        "filters": [
-            {
-                "not": false,
-                "selection": "Lab 1 Density",
-                "operator": "<=",
-                "text": "40"
-            },
-            {
-                "not": true,
-                "selection": "Final Exam",
-                "operator": ">",
-                "text": "200"
+    var Workspace = can.Model({
+        findOne : 'GET /data/workspace/{id}'
+    }, {});
+
+    Workspace.findOne({"id": "50045a9eb1bf6a1201000000"}, function(workspace) {
+        var filters = new can.Observe.List(workspace.display.filters);
+        var andVor = new can.Observe().attr("andVor", workspace.display.andVor);
+        var columns = new can.Observe.List(workspace.display.columns);
+
+        new FiltersControl('#filterDivContainer', {
+            filters: filters
+        });
+
+        new AndVOrControl('#andVorDiv', {
+            andVor: andVor
+        });
+
+        new ColumnsControl('#userTable', {
+            columns: columns
+        });
+
+        new VisControl('#visDialogContainer');
+
+        $("#newFilter").bind("click", function() {
+            filters.push({not: false, "selection": "", operator: "<", "text": ""});
+            $(".filterSelect").ufd();
+        });
+
+        // Restore sorting order from workspace
+        calculateIndexNums();
+        var settings = masterDataTable.fnSettings();
+        settings.aaSorting[0][0] = indexNums[workspace.display.sorting.column];
+        settings.aaSorting[0][1] = workspace.display.sorting.direction;
+        settings.aaSorting[0][2] = workspace.display.sorting.direction === "asc"? 0 : 1;
+
+        masterDataTable.bind('sort', function() {
+            var sortData = settings.aaSorting[0];
+            if(workspace.display.sorting.column !== settings.aoColumns[sortData[0]].sTitle ||
+                    workspace.display.sorting.direction !== sortData[2]) {
+                workspace.display.sorting.column = settings.aoColumns[sortData[0]].sTitle;
+                workspace.display.sorting.direction = sortData[2];
             }
-        ],
-        "columns": [
-            "lastname",
-            "firstname",
-            "netid",
-            "email",
-            "Lab 1 Density",
-            "Final Exam"
-        ],
-        "sorting": {
-            "column": "lastname",
-            "direction": "asc"
-        }
-    };
+        });
 
-    var filters = new can.Observe.List(workspace.filters);
-    var andVor = new can.Observe().attr("andVor", workspace.andVor);
-    var columns = new can.Observe.List(workspace.columns);
+        masterDataTable.fnDraw();
 
-    new FiltersControl('#filterDivContainer', {
-        filters: filters
+        // Leaving this at the end in-case any jq-buttons are added in templates
+        $(".jq-button").button();
     });
-
-    new AndVOrControl('#andVorDiv', {
-        andVor: andVor
-    });
-
-    new ColumnsControl('#userTable', {
-        columns: columns
-    });
-
-    new VisControl('#visDialogContainer');
-
-    $("#newFilter").bind("click", function() {
-        filters.push({not: false, "selection": "", operator: "<", "text": ""});
-        $(".filterSelect").ufd();
-    });
-
-    // Restore sorting order from workspace
-    calculateIndexNums();
-    var settings = masterDataTable.fnSettings();
-    settings.aaSorting[0][0] = indexNums[workspace.sorting.column];
-    settings.aaSorting[0][1] = workspace.sorting.direction;
-    settings.aaSorting[0][2] = workspace.sorting.direction === "asc"? 0 : 1;
-
-    masterDataTable.bind('sort', function() {
-        var sortData = settings.aaSorting[0];
-        if(workspace.sorting.column !== settings.aoColumns[sortData[0]].sTitle ||
-                workspace.sorting.direction !== sortData[2]) {
-            workspace.sorting.column = settings.aoColumns[sortData[0]].sTitle;
-            workspace.sorting.direction = sortData[2];
-        }
-    });
-
-    masterDataTable.fnDraw();
 }
 
 $(document).ready(function() {
+    $("#emailDialog").dialog({
+        autoOpen: false,
+        buttons: {
+            "Cancel": function() {
+                $(this).dialog("close");
+            },
+            "Send!": {
+                text: "Send!",
+                "class": 'sendButton',
+                click: function() {
+                    $.ajax({
+                        url: "/data/email",
+                        type: "POST",
+                        data: {"subject": $("#subject").val(), "body": $("#body").val()},
+                        success: function(data) {
+                            alert(data.results);
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert(errorThrown);
+                        }
+                    });
+                    $(this).dialog("close");
+                }
+            }
+        },
+        modal: true,
+        draggable: false,
+        minWidth: 500,
+        title: "Send E-Mails",
+        show: { effect: "fade", speed: 1000 },
+        hide: { effect: "fade", speed: 1000 }
+    });
+
+    $("#sendEmail").click(function() {
+        var numEmails = masterDataTable.fnSettings().aiDisplay.length;
+        if(numEmails > 1) {
+            $(".sendButton span").text("Send " + numEmails + " E-Mails!");
+        }else {
+            $(".sendButton span").text("Send " + numEmails + " E-Mail!");
+        }
+        $("#emailDialog").dialog('open');
+    });
+
     $.ajax( {
         "dataType": "text",
         "type": "GET",
@@ -335,3 +357,28 @@ $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
     // draw the 'current' page
     oSettings.oApi._fnDraw(oSettings);
 };
+jQuery(document).ajaxSend(function(event, xhr, settings) {
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function safeMethod(method) {
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    if (!safeMethod(settings.type) && !settings.crossDomain) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+    }
+});
