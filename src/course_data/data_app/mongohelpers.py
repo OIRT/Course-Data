@@ -27,4 +27,21 @@ def documents_to_json(docs, brackets=True, **kwargs):
     else:
         jsonstr = json.dumps(docs.to_mongo(), default=json_util.default, **kwargs)
     return jsonstr
-    
+
+def json_to_document(klass, jstr):
+    """Take json and use it to update or create a document
+        Returns the created document
+    """
+    d = json.loads(jstr,object_hook=json_util.object_hook)
+    if "id" in d:
+        created = 0
+        doc = get_document_or_404(klass, id=d['id'])
+    else:
+        created = 1;
+        doc = klass()
+    for k,v in d.iteritems():
+        if k != "_id" and k != "id":
+            doc[k] = v
+    doc.save()
+    return (doc, created)
+            

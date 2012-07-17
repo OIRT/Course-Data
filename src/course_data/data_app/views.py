@@ -1,11 +1,12 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, render
 from django.template.context import RequestContext
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.core.mail import send_mail
 from django.utils import simplejson
 from django.template import Template, Context
-from mongohelpers import get_document_or_404, documents_to_json
+from mongohelpers import get_document_or_404, documents_to_json, json_to_document
 from data_app.models import *
 
 
@@ -100,11 +101,16 @@ def workspace(request, wid):
         ws = get_document_or_404(Workspace, id=wid)
         return HttpResponse(documents_to_json(ws), mimetype="application/json")
     elif request.method == "POST":
-        pass  # TODO: update the workspace
+        create_workspace(request)
 
 
+@require_POST
 def create_workspace(request):
-    pass
+    ws, created = json_to_document(Workspace, request.raw_post_data)
+    if created:
+        return HttpResponse(status=201)
+    else:
+        return HttpResponse(status=200)
 
 
 def send_emails(request):

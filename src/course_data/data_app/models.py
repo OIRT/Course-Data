@@ -71,9 +71,9 @@ class Gradebook(Document):
 class Workspace(Document):
     id = ObjectIdField()
     name = StringField(required=True)
-    owners = ListField(ReferenceField(User), required=True)
+    owners = ListField(StringField(),required=True)
     rosters = ListField(StringField())
-    extras = ListField(ReferenceField(User))
+    extras = ListField(StringField())
     display = DictField()
 
     meta = {'allow_inheritance': False}
