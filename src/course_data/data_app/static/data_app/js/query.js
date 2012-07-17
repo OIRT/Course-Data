@@ -223,7 +223,7 @@ function tableInitialized() {
         findOne : 'GET /data/workspace/{id}'
     }, {});
 
-    Workspace.findOne({"id": "50045a9eb1bf6a1201000000"}, function(workspace) {
+    Workspace.findOne({"id": "5005bccab1bf6a076d000000"}, function(workspace) {
         var filters = new can.Observe.List(workspace.display.filters);
         var andVor = new can.Observe().attr("andVor", workspace.display.andVor);
         var columns = new can.Observe.List(workspace.display.columns);
@@ -271,6 +271,17 @@ function tableInitialized() {
 }
 
 $(document).ready(function() {
+
+    markItUpSettings = {
+        onTab:          {keepDefault:false, replaceWith:'    '},
+        markupSet:  [
+            {name:'Bold', key:'B', openWith:'(!(<strong>|!|<b>)!)', closeWith:'(!(</strong>|!|</b>)!)' },
+            {name:'Italic', key:'I', openWith:'(!(<em>|!|<i>)!)', closeWith:'(!(</em>|!|</i>)!)'  }
+        ]
+    };
+
+    $("#body").markItUp(markItUpSettings);
+
     $("#emailDialog").dialog({
         autoOpen: false,
         buttons: {
@@ -298,7 +309,7 @@ $(document).ready(function() {
         },
         modal: true,
         draggable: false,
-        minWidth: 500,
+        minWidth: 700,
         title: "Send E-Mails",
         show: { effect: "fade", speed: 1000 },
         hide: { effect: "fade", speed: 1000 }
