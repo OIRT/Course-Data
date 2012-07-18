@@ -14,7 +14,7 @@ from mongoengine.queryset import Q
 # Utility functions
 #####
 def all_workspace_students(workspace):
-    return Users.objects(Q(courses__id__in=workspace.rosters) | 
+    return User.objects(Q(courses__id__in=workspace.rosters) | 
                             Q(id__in=workspace.extras))
 
 #####
