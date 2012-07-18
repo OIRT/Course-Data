@@ -267,6 +267,13 @@ function tableInitialized() {
 
         // Leaving this at the end in-case any jq-buttons are added in templates
         $(".jq-button").button();
+
+
+        // Adding the dropdown to the email dialog, has to be done after data is loaded
+        $(".markItUpUfd").html(can.view('static/data_app/views/filterSelect.ejs'));
+        // The z-index of the dialog starts counting at 1000, so setting this significantly
+        // higher, to prevent the dropdown from hiding behind the dialog
+        $(".markItUpUfd select").ufd({"zIndexPopup": 2000});
     });
 }
 
@@ -276,11 +283,19 @@ $(document).ready(function() {
         onTab:          {keepDefault:false, replaceWith:'    '},
         markupSet:  [
             {name:'Bold', key:'B', openWith:'(!(<strong>|!|<b>)!)', closeWith:'(!(</strong>|!|</b>)!)' },
-            {name:'Italic', key:'I', openWith:'(!(<em>|!|<i>)!)', closeWith:'(!(</em>|!|</i>)!)'  }
+            {name:'Italic', key:'I', openWith:'(!(<em>|!|<i>)!)', closeWith:'(!(</em>|!|</i>)!)'  },
+            {separator:'---------------' },
+            {
+                name:"Insert Variable",
+                replaceWith: function(markItUp) {
+                    return "{{" + $(".markItUpUfd input").val() + "}}";
+                }
+            }
         ]
     };
 
     $("#body").markItUp(markItUpSettings);
+    $(".markItUpButton3").before("<li class='markItUpUfd'></li>");
 
     $("#emailDialog").dialog({
         autoOpen: false,
@@ -309,6 +324,7 @@ $(document).ready(function() {
         },
         modal: true,
         draggable: false,
+        resizable: false,
         minWidth: 700,
         title: "Send E-Mails",
         show: { effect: "fade", speed: 1000 },

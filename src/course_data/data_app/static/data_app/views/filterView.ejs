@@ -4,16 +4,10 @@
         <option <%= filter.attr('not') === true? "selected='selected'" : "" %>>!</option>
     </select>
 
-    <select class="filterSelect" <%= "value='" + filter.attr('selection') + "'" %>>
-        <option></option>
-        <% aoColumns = masterDataTable.fnSettings().aoColumns;
-        for(var c in aoColumns) { %>
-            <option <%= "value=\"" + aoColumns[c].sTitle + "\"" %>
-                <% if(aoColumns[c].sTitle === filter.attr('selection')) { %>
-                    selected="selected"
-                <% } %>><%= aoColumns[c].sTitle %></option>
-        <% } %>
-    </select>
+    <%== can.view.render('static/data_app/views/filterSelect.ejs', {
+        filter: filter
+    }) %>
+
     <select class="filterOperator">
         <% var options = ['<', '>', '=', '<=', '>=', 'equals', 'contains', 'startsWith'];
             for(option in options) { %>
