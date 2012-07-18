@@ -8,7 +8,18 @@ from django.utils import simplejson
 from django.template import Template, Context
 from mongohelpers import get_document_or_404, documents_to_json, json_to_document
 from data_app.models import *
+from mongoengine.queryset import Q
 
+#####
+# Utility functions
+#####
+def all_workspace_students(workspace):
+    return Users.objects(Q(courses__id__in=workspace.rosters) | 
+                            Q(id__in=workspace.extras))
+
+#####
+# Views
+######
 
 def index(request):
     return render_to_response('data_app/index.html', {}, context_instance=RequestContext(request))
@@ -83,26 +94,18 @@ def fetch_one_user(request, attr, id, retformat=""):
 
 
 def fetch_workspace_users(request, wid):
-    context = {}
     ws = get_document_or_404(Workspace, id=wid)
-    students = User.objects(courses__id__in=ws.rosters)
-    extras = ws.extras
-    if len(extras):
-        jsonstr = "[ %s, %s ]" % (documents_to_json(students, brackets=False),
-                                documents_to_json(extras, brackets=False))
-    else:
-        jsonstr = documents_to_json(students)
-    context['json'] = jsonstr
-    return render(request, 'data_app/json_template', context)
-
+    students = all_workspace_students(ws)
+    jsonstr = documents_to_json(students)
+    return HttpResponse(jsonstr, mimetype="application/json")
 
 def workspace(request, wid):
     if request.method == "GET":
-        ws = get_document_or_404(Workspace, id=wid)
-        return HttpResponse(documents_to_json(ws), mimetype="application/json")
+        ws = get_document_or_404(Workspace,id=wid)
+        jsonstr = documents_to_json(ws)
+        return HttpResponse(jsonstr, mimetype="application/json")
     elif request.method == "POST":
         create_workspace(request)
-
 
 @require_POST
 def create_workspace(request):
