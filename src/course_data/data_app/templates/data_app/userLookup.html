@@ -6,6 +6,7 @@
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd/ufd-base.css" />
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/ufd/plain.css" />
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/dataTables/jquery.dataTables.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/markitup/skins/markitup/style.css" />
 
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}data_app/css/style.css" />
 
@@ -17,6 +18,8 @@
         <script language="javascript" src="{{ STATIC_URL }}lib/dataTables/ColReorder.js"></script>
         <script language="javascript" src="{{ STATIC_URL }}lib/canjs/can.jquery-1.0.7.js"></script>
         <script language="javascript" src="{{ STATIC_URL }}lib/canjs/can.fixture.js"></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/markitup/jquery.markitup.js"></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/json2.js"></script>
         <script langauge="javascript" src="{{ STATIC_URL }}data_app/js/query.js" ></script>
     </head>
 
@@ -26,7 +29,7 @@
         <div id="filterDivContainer"></div>
 
         <div id="buttonDiv" style="margin-top:30px">
-            <button type="button" onclick="masterDataTable.fnStandingRedraw(); return false;">Recalculate Filters</button>
+            <button type="button" onclick="CourseData.masterDataTable.fnStandingRedraw(); return false;">Recalculate Filters</button>
             <button type="button" id="newFilter">Add New Filter</button>
         </div>
         <br />
@@ -45,7 +48,7 @@
                 <div id="emailForm">
                     <form name="email" action="">
                         <label for="subject">Subject:</label>
-                        <input type="text" name="subject" id="subject" value="" size="35" />
+                        <input type="text" name="subject" id="subject" value="" size="59" />
 
                         <textarea rows="10" cols="50" id="body"></textarea>
                     </form>

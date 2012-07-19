@@ -10,16 +10,21 @@ from mongohelpers import get_document_or_404, documents_to_json, json_to_documen
 from data_app.models import *
 from mongoengine.queryset import Q
 
+
 #####
 # Utility functions
 #####
+
+
 def all_workspace_students(workspace):
-    return User.objects(Q(courses__id__in=workspace.rosters) | 
+    return User.objects(Q(courses__id__in=workspace.rosters) |
                             Q(id__in=workspace.extras))
+
 
 #####
 # Views
 ######
+
 
 def index(request):
     return render_to_response('data_app/index.html', {}, context_instance=RequestContext(request))
@@ -99,13 +104,15 @@ def fetch_workspace_users(request, wid):
     jsonstr = documents_to_json(students)
     return HttpResponse(jsonstr, mimetype="application/json")
 
+
 def workspace(request, wid):
     if request.method == "GET":
         ws = get_document_or_404(Workspace,id=wid)
         jsonstr = documents_to_json(ws)
         return HttpResponse(jsonstr, mimetype="application/json")
     elif request.method == "POST":
-        create_workspace(request)
+        return create_workspace(request)
+
 
 @require_POST
 def create_workspace(request):
