@@ -208,8 +208,13 @@ function tableInitialized() {
 
             // Hide the columns that aren't mentioned in the column list
             for(i = 0; i < oSettings.aoColumns.length; i++) {
-                CourseData.masterDataTable.fnSetColumnVis(i, (i < columns.length));
+                // The 'false' here is very important for performance on large sites.
+                // Keeps it from redrawing the table for each column.
+                CourseData.masterDataTable.fnSetColumnVis(i, (i < columns.length), false);
             }
+
+            // Recalculates column widths now that we've removed a bunch
+            CourseData.masterDataTable.fnAdjustColumnSizing();
 
             CourseData.masterDataTable.bind('column-reorder', this.updateColumns);
         },
