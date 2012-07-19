@@ -8,6 +8,7 @@ from django.utils import simplejson
 from django.template import Template, Context
 from mongohelpers import get_document_or_404, documents_to_json, json_to_document
 from data_app.models import *
+import logging
 
 
 def index(request):
@@ -101,7 +102,7 @@ def workspace(request, wid):
         ws = get_document_or_404(Workspace, id=wid)
         return HttpResponse(documents_to_json(ws), mimetype="application/json")
     elif request.method == "POST":
-        create_workspace(request)
+        return create_workspace(request)
 
 
 @require_POST

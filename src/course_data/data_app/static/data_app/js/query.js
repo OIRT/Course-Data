@@ -1,5 +1,25 @@
-var masterDataTable = null;
-var indexNums;
+var CourseData = {
+    fullyLoaded: false,
+    masterDataTable: null,
+    indexNums: null,
+    workspace: null,
+
+    workspaceUpdater: null,
+    workspaceUpdateTime: null,
+
+    postWorkspace: function() {
+        CourseData.workspaceUpdateTime = new Date().getTime() + 6000;
+        if(CourseData.workspaceUpdater === null) {
+            CourseData.workspaceUpdater = setInterval(function() {
+                if(new Date().getTime() > CourseData.workspaceUpdateTime) {
+                    CourseData.workspace.save();
+                    clearInterval(CourseData.workspaceUpdater);
+                    CourseData.workspaceUpdater = null;
+                }
+            }, 1500);
+        }
+    }
+};
 
 function compareValues(a, b, operator) {
     if( operator === "<" && parseFloat(a) < parseFloat(b) ||
@@ -21,7 +41,7 @@ function checkCondition(oSettings, aData, iDataIndex, topLevel) {
 
     if(masterVal === "") return true;
 
-    cellVal = aData[indexNums[topLevel.find(".filterSelect").val()]];
+    cellVal = aData[CourseData.indexNums[topLevel.find(".filterSelect").val()]];
 
     if(cellVal === "None") return true;
 
@@ -35,18 +55,34 @@ function checkCondition(oSettings, aData, iDataIndex, topLevel) {
 }
 
 function calculateIndexNums() {
-    oSettings = masterDataTable.fnSettings();
-    indexNums = new Array(oSettings.aoColumns.length);
-    for(i = 0; i < indexNums.length; i++) {
-        indexNums[oSettings.aoColumns[i].sTitle] = i;
+    var oSettings = CourseData.masterDataTable.fnSettings();
+    CourseData.indexNums = new Array(oSettings.aoColumns.length);
+    for(i = 0; i < CourseData.indexNums.length; i++) {
+        CourseData.indexNums[oSettings.aoColumns[i].sTitle] = i;
+    }
+}
+
+function updateColumnWorkspace() {
+    if(CourseData.fullyLoaded) {
+        var aoColumns = CourseData.masterDataTable.fnSettings().aoColumns;
+        var columns = [];
+        for(var column in aoColumns) {
+            if(aoColumns[column].bVisible) {
+                columns.push(aoColumns[column].sTitle);
+            }
+        }
+
+        CourseData.workspace.attr("display.columns", columns);
     }
 }
 
 function updateColumnVisibility() {
     calculateIndexNums();
     $(".colVisCheckbox").each(function() {
-        masterDataTable.fnSetColumnVis(indexNums[$(this).attr("name")], $(this).attr("checked") === "checked");
+        CourseData.masterDataTable.fnSetColumnVis(CourseData.indexNums[$(this).attr("name")], $(this).attr("checked") === "checked");
     });
+
+    updateColumnWorkspace();
 }
 
 function tableInitialized() {
@@ -86,36 +122,45 @@ function tableInitialized() {
         '.notOperator change': function(el, ev) {
             var index = this.findIndex(el);
             this.options.filters[index].attr("not", (el.val() === "!"));
+            this.updateWorkspace();
         },
 
         '.ufd select change': function(el, ev) {
             var index = this.findIndex(el);
             this.options.filters[index].attr("selection", el.val());
+            this.updateWorkspace();
         },
 
         '.filterOperator change': function(el, ev) {
             var index = this.findIndex(el);
             this.options.filters[index].attr("operator", el.val());
+            this.updateWorkspace();
         },
 
         '.filterText keyup': function(el, ev) {
             if(ev.keyCode == 13) {
-                masterDataTable.fnStandingRedraw();
+                CourseData.masterDataTable.fnStandingRedraw();
             } else {
                 var index = this.findIndex(el);
                 this.options.filters[index].attr("text", el.val());
+                this.updateWorkspace();
             }
         },
 
         '.deleteFilter click': function(el, ev) {
             var index = this.findIndex(el);
             this.options.filters.splice(index, 1);
+            this.updateWorkspace();
             $(".filterSelect").ufd();
-            masterDataTable.fnStandingRedraw();
+            CourseData.masterDataTable.fnStandingRedraw();
         },
 
         findIndex: function(el) {
             return $('.filterItem').index(el.closest('.filterItem'));
+        },
+
+        updateWorkspace: function() {
+            CourseData.workspace.attr("display.filters", this.options.filters);
         }
     });
 
@@ -128,6 +173,7 @@ function tableInitialized() {
 
         '#andVor change': function(el, ev) {
             this.options.andVor.attr("andVor", el.val());
+            CourseData.workspace.attr("display.andVor", el.val());
         }
     });
 
@@ -136,40 +182,40 @@ function tableInitialized() {
         init: function(element, options) {
             columns = this.options.columns;
 
-            var oSettings = masterDataTable.fnSettings();
+            var oSettings = CourseData.masterDataTable.fnSettings();
 
             calculateIndexNums();
 
             // Goes through and puts all of the visible columns in the correct
             // order on the left, and the invisible columns on the right.
             for(i = 0; i < columns.length; i++) {
-                var from = indexNums[columns[i]];
+                var from = CourseData.indexNums[columns[i]];
                 var to = i;
                 toTitle = oSettings.aoColumns[to].sTitle;
 
                 if(from !== to) {
-                    masterDataTable.fnColReorder(from, to);
+                    CourseData.masterDataTable.fnColReorder(from, to);
 
 
                     // Updates our cache of column order
                     var min = (to < from)? to : from;
                     var max = (to > from)? to : from;
                     for(j = min; j <= max; j++) {
-                        indexNums[oSettings.aoColumns[j].sTitle] = j;
+                        CourseData.indexNums[oSettings.aoColumns[j].sTitle] = j;
                     }
                 }
             }
 
             // Hide the columns that aren't mentioned in the column list
             for(i = 0; i < oSettings.aoColumns.length; i++) {
-                masterDataTable.fnSetColumnVis(i, (i < columns.length));
+                CourseData.masterDataTable.fnSetColumnVis(i, (i < columns.length));
             }
 
-            masterDataTable.bind('column-reorder', this.updateColumns);
+            CourseData.masterDataTable.bind('column-reorder', this.updateColumns);
         },
 
         updateColumns: function() {
-            var oSettings = masterDataTable.fnSettings();
+            var oSettings = CourseData.masterDataTable.fnSettings();
             var aoColumns = oSettings.aoColumns;
             var size = aoColumns.length;
 
@@ -187,7 +233,7 @@ function tableInitialized() {
     VisControl = can.Control({
         init: function() {
             this.element.html(can.view('static/data_app/views/visDialog.ejs', {
-                columns: masterDataTable.fnSettings().aoColumns
+                columns: CourseData.masterDataTable.fnSettings().aoColumns
             }));
 
             $("#visDialog").dialog({
@@ -212,21 +258,23 @@ function tableInitialized() {
         },
 
         '#visDialog close': function() {
-            calculateIndexNums();
-            $(".colVisCheckbox").each(function() {
-                masterDataTable.fnSetColumnVis(indexNums[$(this).attr("name")], $(this).attr("checked") === "checked");
-            });
+            updateColumnVisibility();
         }
     });
 
     var Workspace = can.Model({
-        findOne : 'GET /data/workspace/{id}'
+        findOne : 'GET /data/workspace/{id}/',
+        update  : function(id, ws) {
+            return $.post('/data/workspace/' + id + '/', JSON.stringify(ws));
+        }
     }, {});
 
-    Workspace.findOne({"id": "5005bccab1bf6a076d000000"}, function(workspace) {
-        var filters = new can.Observe.List(workspace.display.filters);
-        var andVor = new can.Observe().attr("andVor", workspace.display.andVor);
-        var columns = new can.Observe.List(workspace.display.columns);
+    Workspace.findOne({"id": "5005bccab1bf6a076d000000"}, function(ws) {
+        CourseData.workspace = ws;
+        CourseData.workspace["id"] = CourseData.workspace["_id"]["$oid"];
+        var filters = new can.Observe.List(CourseData.workspace.display.filters);
+        var andVor = new can.Observe().attr("andVor", CourseData.workspace.display.andVor);
+        var columns = new can.Observe.List(CourseData.workspace.display.columns);
 
         new FiltersControl('#filterDivContainer', {
             filters: filters
@@ -249,21 +297,21 @@ function tableInitialized() {
 
         // Restore sorting order from workspace
         calculateIndexNums();
-        var settings = masterDataTable.fnSettings();
-        settings.aaSorting[0][0] = indexNums[workspace.display.sorting.column];
-        settings.aaSorting[0][1] = workspace.display.sorting.direction;
-        settings.aaSorting[0][2] = workspace.display.sorting.direction === "asc"? 0 : 1;
+        var settings = CourseData.masterDataTable.fnSettings();
+        settings.aaSorting[0][0] = CourseData.indexNums[CourseData.workspace.display.sorting.column];
+        settings.aaSorting[0][1] = CourseData.workspace.display.sorting.direction;
+        settings.aaSorting[0][2] = CourseData.workspace.display.sorting.direction === "asc"? 0 : 1;
 
-        masterDataTable.bind('sort', function() {
+        CourseData.masterDataTable.bind('sort', function() {
             var sortData = settings.aaSorting[0];
-            if(workspace.display.sorting.column !== settings.aoColumns[sortData[0]].sTitle ||
-                    workspace.display.sorting.direction !== sortData[2]) {
-                workspace.display.sorting.column = settings.aoColumns[sortData[0]].sTitle;
-                workspace.display.sorting.direction = sortData[2];
+            if(CourseData.workspace.display.sorting.column !== settings.aoColumns[sortData[0]].sTitle ||
+                    CourseData.workspace.display.sorting.direction !== sortData[2]) {
+                CourseData.workspace.attr("display.sorting.column", settings.aoColumns[sortData[0]].sTitle);
+                CourseData.workspace.attr("display.sorting.direction", sortData[2]);
             }
         });
 
-        masterDataTable.fnDraw();
+        CourseData.masterDataTable.fnDraw();
 
         // Leaving this at the end in-case any jq-buttons are added in templates
         $(".jq-button").button();
@@ -274,6 +322,14 @@ function tableInitialized() {
         // The z-index of the dialog starts counting at 1000, so setting this significantly
         // higher, to prevent the dropdown from hiding behind the dialog
         $(".markItUpUfd select").ufd({"zIndexPopup": 2000});
+
+        CourseData.workspace.bind('change', function(ev, attr, how, newVal, oldVal) {
+            if(attr !== "updated") {
+                CourseData.postWorkspace();
+            }
+        });
+
+        CourseData.fullyLoaded = true;
     });
 }
 
@@ -332,7 +388,7 @@ $(document).ready(function() {
     });
 
     $("#sendEmail").click(function() {
-        var numEmails = masterDataTable.fnSettings().aiDisplay.length;
+        var numEmails = CourseData.masterDataTable.fnSettings().aiDisplay.length;
         if(numEmails > 1) {
             $(".sendButton span").text("Send " + numEmails + " E-Mails!");
         }else {
@@ -348,7 +404,7 @@ $(document).ready(function() {
         "success": function(dataStr) {
             var data = eval('(' + dataStr + ')');
 
-            masterDataTable = $("#userTable").dataTable({
+            CourseData.masterDataTable = $("#userTable").dataTable({
                 "bJQueryUI": true,
                 "bProcessing": true,
                 "sDom": 'R<"H"lr>t<"F"ip>',
@@ -356,6 +412,9 @@ $(document).ready(function() {
                 "sScrollX": "100%",
                 "bScrollAutoCss": true,
                 "bDeferRender": true,
+                "oColReorder": {
+                    "fnReorderCallback": updateColumnWorkspace
+                },
 
                 "aaData": data.aaData,
                 "aoColumns": data.aoColumns
@@ -387,7 +446,7 @@ $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
 jQuery(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {
         var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
+        if (document.cookie && document.cookie !== '') {
             var cookies = document.cookie.split(';');
             for (var i = 0; i < cookies.length; i++) {
                 var cookie = jQuery.trim(cookies[i]);
