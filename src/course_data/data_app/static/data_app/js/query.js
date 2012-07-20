@@ -79,8 +79,9 @@ function updateColumnWorkspace() {
 function updateColumnVisibility() {
     calculateIndexNums();
     $(".colVisCheckbox").each(function() {
-        CourseData.masterDataTable.fnSetColumnVis(CourseData.indexNums[$(this).attr("name")], $(this).attr("checked") === "checked");
+        CourseData.masterDataTable.fnSetColumnVis(CourseData.indexNums[$(this).attr("name")], $(this).attr("checked") === "checked", false);
     });
+    CourseData.masterDataTable.fnAdjustColumnSizing();
 
     updateColumnWorkspace();
 }
