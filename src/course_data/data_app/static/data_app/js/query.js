@@ -368,10 +368,21 @@ $(document).ready(function() {
                 text: "Send!",
                 "class": 'sendButton',
                 click: function() {
+                    var data = {"subject": $("#subject").val(), "body": $("#body").val()};
+
+                    data.users = [];
+                    var settings = CourseData.masterDataTable.fnSettings();
+
+                    for(var index in settings.aiDisplay) {
+                        var dataIndex = settings.aiDisplay[index];
+                        var rcpid = settings.aoData[dataIndex]._aData[CourseData.indexNums["rcpid"]];
+                        data.users.push(rcpid);
+                    }
+
                     $.ajax({
                         url: "/data/email",
                         type: "POST",
-                        data: {"subject": $("#subject").val(), "body": $("#body").val()},
+                        data: data,
                         success: function(data) {
                             alert(data.results);
                         },
