@@ -9,6 +9,8 @@ from django.template import Template, Context
 from mongohelpers import get_document_or_404, documents_to_json, json_to_document
 from data_app.models import *
 from mongoengine.queryset import Q
+from itertools import chain
+import json
 
 
 #####
@@ -19,6 +21,24 @@ from mongoengine.queryset import Q
 def all_workspace_students(workspace):
     return User.objects(Q(courses__id__in=workspace.rosters) |
                             Q(id__in=workspace.extras))
+                            
+
+def merge_gradebooks_for_students(students,gradebooks):
+    # Unique list of all gradebook headers
+    all_gradebook_items = list(chain.from_iterable([gb.items for gb in gradebooks]))
+    gradebook_headers = set([i.name for i in all_gradebook_items])
+
+    # Initialize a dict containing all students each with all gradebook headers, 
+    # and default values of '' for each assignment
+    data = dict((h,'') for h in gradebook_headers)
+    studentdata = dict((s.rcpid, data.copy()) for s in students) 
+    #assert False, [len(v.keys()) for k,v in studentdata.iteritems()]
+    for gb in gradebooks:
+        gbdict = gb.as_dict()
+        for s in studentdata:
+            if s in gbdict:
+                studentdata[s].update(gbdict[s])
+    return studentdata
 
 
 #####
@@ -128,3 +148,29 @@ def send_emails(request):
     context = Context({"firstname": "Eric", "lastname": "Jeney"})
     send_mail(request.POST["subject"], template.render(context), "someone@else.com", ["emjeney@gmail.com"], fail_silently=False)
     return HttpResponse(simplejson.dumps({"results": request.POST["subject"]}), mimetype="application/json")
+
+def table(request, wid):
+    """
+        Collate and return a workspace's data as a list of rows.
+        Each row starts with the person's id.
+    """
+    ws = get_document_or_404(Workspace, id=wid)
+    students = all_workspace_students(ws)
+    gradebooks = Gradebook.objects(id__in=ws.gradebooks)
+    rcpids = []
+    studentdata = {}
+    
+    studentdata = merge_gradebooks_for_students(students,gradebooks)
+
+    # Combine all the data into a table format
+    headers = ['rcpid']
+    headers.extend(studentdata.itervalues().next().keys())
+    tabledata = []
+    tabledata.append(headers)
+    for person,grades in studentdata.iteritems():
+        row = [person]
+        row.extend(grades.values())
+        tabledata.append(row)
+        
+    jsonstr = json.dumps(tabledata)
+    return HttpResponse(jsonstr, mimetype="application/json")
