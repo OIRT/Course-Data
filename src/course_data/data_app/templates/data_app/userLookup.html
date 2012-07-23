@@ -20,7 +20,12 @@
         <script language="javascript" src="{{ STATIC_URL }}lib/canjs/can.fixture.js"></script>
         <script language="javascript" src="{{ STATIC_URL }}lib/markitup/jquery.markitup.js"></script>
         <script language="javascript" src="{{ STATIC_URL }}lib/json2.js"></script>
-        <script langauge="javascript" src="{{ STATIC_URL }}data_app/js/query.js" ></script>
+        <script language="javascript" src="{{ STATIC_URL }}data_app/js/query.js" ></script>
+
+        <!-- For the File Uploader -->
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/uploader/jquery.plupload.queue/css/jquery.plupload.queue.css" />
+        <script language="javascript" src="{{ STATIC_URL }}lib/uploader/plupload.full.js" ></script>
+        <script language="javascript" src="{{ STATIC_URL }}lib/uploader/jquery.plupload.queue/jquery.plupload.queue.js" ></script>
     </head>
 
     <body>
@@ -31,6 +36,7 @@
         <div id="buttonDiv" style="margin-top:30px">
             <button type="button" onclick="CourseData.masterDataTable.fnStandingRedraw(); return false;">Recalculate Filters</button>
             <button type="button" id="newFilter">Add New Filter</button>
+            <button type="button" id="uploadButton">Upload File</button>
         </div>
         <br />
         <hr />
@@ -54,6 +60,14 @@
                     </form>
                 </div>
             </div>
+        </div>
+
+        <div id="uploadDiv">
+            <form id="uploadForm">
+                <div id="uploader">
+                    Hey!  You don't support what we need you to support.  Please support it.
+                </div>
+            </form>
         </div>
     </body>
 </html>

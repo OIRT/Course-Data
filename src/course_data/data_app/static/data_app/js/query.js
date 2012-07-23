@@ -440,6 +440,63 @@ $(document).ready(function() {
             tableInitialized();
         }
     });
+
+    $("#uploadDiv").dialog({
+        autoOpen: false,
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 700,
+        title: "Upload File",
+        show: { effect: "fade", speed: 1000 },
+        hide: { effect: "fade", speed: 1000 }
+    });
+
+    $("#uploader").pluploadQueue({
+        // General settings
+        runtimes : 'html5,gears,flash,silverlight',
+        url : 'upload.php',
+        max_file_size : '100mb',
+        chunk_size : '1mb',
+        unique_names : true,
+
+        // Specify what files to browse for
+        filters : [
+            {title : "Image files", extensions : "jpg,gif,png"},
+            {title : "Zip files", extensions : "zip"}
+        ],
+
+        // Flash settings
+        flash_swf_url : '/static/lib/uploader/plupload.flash.swf',
+
+        // Silverlight settings
+        silverlight_xap_url : '/static/lib/uploader/plupload.silverlight.xap'
+    });
+
+    // Client side form validation
+    $('#uploadForm').submit(function(e) {
+        var uploader = $('#uploader').pluploadQueue();
+
+        // Files in queue upload them first
+        if (uploader.files.length > 0) {
+            // When all files are uploaded submit form
+            uploader.bind('StateChanged', function() {
+                if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
+                    $('form')[0].submit();
+                }
+            });
+
+            uploader.start();
+        } else {
+            alert('You must queue at least one file.');
+        }
+
+        return false;
+    });
+
+    $("#uploadButton").bind('click', function() {
+        $("#uploadDiv").dialog('open');
+    });
 });
 
 // Adds a function to DataTables that recalculates the filters while
