@@ -14,7 +14,7 @@ def documents_to_json(docs, brackets=True, **kwargs):
     """ Takes a mongoengine document or QuerySet/list of documents, returns json.
     Use brackets=False to leave out the outer "[ ]", useful for appending different lists
     Extra arguments are passed on to json.dumps()
-    
+
     """
     if isinstance(docs, QuerySet) or isinstance(docs, list):
         jsonlist = []
@@ -33,9 +33,9 @@ def json_to_document(klass, jstr):
         Returns the created document
     """
     d = json.loads(jstr,object_hook=json_util.object_hook)
-    if "id" in d:
+    if "_id" in d:
         created = 0
-        doc = get_document_or_404(klass, id=d['id'])
+        doc = get_document_or_404(klass, id=d['_id'])
     else:
         created = 1;
         doc = klass()
@@ -44,4 +44,3 @@ def json_to_document(klass, jstr):
             doc[k] = v
     doc.save()
     return (doc, created)
-            

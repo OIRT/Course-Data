@@ -173,8 +173,8 @@ function tableInitialized() {
         },
 
         '#andVor change': function(el, ev) {
-            this.options.andVor.attr("andVor", el.val());
-            CourseData.workspace.attr("display.andVor", el.val());
+            this.options.andVor.attr("andVor", (el.val() === "all"? "and" : "or"));
+            CourseData.workspace.attr("display.andVor", (el.val() === "all"? "and" : "or"));
         }
     });
 
@@ -275,11 +275,22 @@ function tableInitialized() {
         }
     }, {});
 
-    Workspace.findOne({"id": "5005bccab1bf6a076d000000"}, function(ws) {
+    Workspace.findOne({"id": "500d6b12b1bf6a0381000000"}, function(ws) {
         CourseData.workspace = ws;
         CourseData.workspace["id"] = CourseData.workspace["_id"]["$oid"];
+        if(!CourseData.workspace.display.filters) {
+            CourseData.workspace.display.filters = [];
+        }
         var filters = new can.Observe.List(CourseData.workspace.display.filters);
+
+        if(!CourseData.workspace.display.andVor) {
+            CourseData.workspace.display.andVor = can.Observe("and");
+        }
         var andVor = new can.Observe().attr("andVor", CourseData.workspace.display.andVor);
+
+        if(!CourseData.workspace.display.columns) {
+            CourseData.workspace.display.columns = [];
+        }
         var columns = new can.Observe.List(CourseData.workspace.display.columns);
 
         new FiltersControl('#filterDivContainer', {
@@ -304,16 +315,21 @@ function tableInitialized() {
         // Restore sorting order from workspace
         calculateIndexNums();
         var settings = CourseData.masterDataTable.fnSettings();
-        settings.aaSorting[0][0] = CourseData.indexNums[CourseData.workspace.display.sorting.column];
-        settings.aaSorting[0][1] = CourseData.workspace.display.sorting.direction;
-        settings.aaSorting[0][2] = CourseData.workspace.display.sorting.direction === "asc"? 0 : 1;
+        if(CourseData.workspace.display.sorting) {
+            settings.aaSorting[0][0] = CourseData.indexNums[CourseData.workspace.display.sorting.column];
+            settings.aaSorting[0][1] = CourseData.workspace.display.sorting.direction;
+            settings.aaSorting[0][2] = CourseData.workspace.display.sorting.direction === "asc"? 0 : 1;
+        }else {
+            CourseData.workspace.display.attr({sorting: {column: "", direction: ""}});
+        }
 
         CourseData.masterDataTable.bind('sort', function() {
             var sortData = settings.aaSorting[0];
-            if(CourseData.workspace.display.sorting.column !== settings.aoColumns[sortData[0]].sTitle ||
+            if(!CourseData.workspace.display.sorting ||
+                    CourseData.workspace.display.sorting.column !== settings.aoColumns[sortData[0]].sTitle ||
                     CourseData.workspace.display.sorting.direction !== sortData[2]) {
                 CourseData.workspace.attr("display.sorting.column", settings.aoColumns[sortData[0]].sTitle);
-                CourseData.workspace.attr("display.sorting.direction", sortData[2]);
+                CourseData.workspace.attr("display.sorting.direction", sortData[1]);
             }
         });
 
