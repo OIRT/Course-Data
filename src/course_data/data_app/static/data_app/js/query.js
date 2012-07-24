@@ -37,7 +37,7 @@ function compareValues(a, b, operator) {
 }
 
 function checkCondition(oSettings, aData, iDataIndex, topLevel) {
-    masterVal = topLevel.find(".filterText").val();
+    var masterVal = topLevel.find(".filterText").val();
 
     if(masterVal === "") return true;
 
@@ -90,15 +90,16 @@ function tableInitialized() {
     $.fn.dataTableExt.afnFiltering.push(
         function(oSettings, aData, iDataIndex) {
             calculateIndexNums();
-            andVor = $("#andVor").val() === "all";
+            var andVor = $("#andVor").val() === "all";
 
+            var show;
             if(andVor) {
                 show = true;
             }else {
                 show = false;
             }
             $("#filterDivContainer").find(".filterDiv").each(function() {
-                r = checkCondition(oSettings, aData, iDataIndex, $(this));
+                var r = checkCondition(oSettings, aData, iDataIndex, $(this));
                 if(!r && andVor) {
                     show = false;
                     return;
@@ -181,7 +182,7 @@ function tableInitialized() {
     ColumnsControl = can.Control({
         // Make sure all of the columns are in the correct order, with correct visibility
         init: function(element, options) {
-            columns = this.options.columns;
+            var columns = this.options.columns;
 
             var oSettings = CourseData.masterDataTable.fnSettings();
 
@@ -350,6 +351,8 @@ function tableInitialized() {
                 CourseData.postWorkspace();
             }
         });
+
+        settings.aoColumns[CourseData.indexNums["Quiz 01"]].sType = "numeric";
 
         CourseData.fullyLoaded = true;
     });
