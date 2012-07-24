@@ -1,10 +1,10 @@
 <div id="visDialog">
-    <div style="max-height: 500px;overflow: scroll; min-width: 100%">
+    <div style="max-height: 500px">
         <ul id="visList">
             <% list(columns, function(column) { %>
                 <li>
-                    <input type="checkbox" class="colVisCheckbox" <%= "id=\"vis-" + column.sTitle + "\" name=\"" + column.sTitle + "\" " + (column.bVisible? "checked=\"checked\"" : "")%>></input>
-                    <label <%= "for=\"vis-" + column.sTitle + "\"" %>><%= column.sTitle %></label>
+                    <input type="checkbox" class="colVisCheckbox" <%= "id=\"vis-" + column.sTitle.replace(/ /g, "_") + "\" name=\"" + column.sTitle + "\" " + (column.bVisible? "checked=\"checked\"" : "")%>></input>
+                    <label <%= "for=\"vis-" + column.sTitle.replace(/ /g, "_") + "\"" %>><%= column.sTitle %></label>
                 </li>
             <% }); %>
         </ul>
