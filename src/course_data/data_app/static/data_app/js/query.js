@@ -270,7 +270,12 @@ function tableInitialized() {
     });
 
     var Workspace = can.Model({
-        findOne : 'GET /data/workspace/{id}/',
+        findOne : function(options) {
+            return $.ajax({
+                url: '/data/workspace/' + options.id + '/',
+                cache: false // Required so IE doesn't cache the response
+            });
+        },
         update  : function(id, ws) {
             return $.post('/data/workspace/' + id + '/', JSON.stringify(ws));
         }
@@ -403,6 +408,7 @@ $(document).ready(function() {
                         url: "/data/email",
                         type: "POST",
                         data: data,
+                        cache: false,
                         success: function(data) {
                             alert(data.results);
                         },
@@ -437,6 +443,7 @@ $(document).ready(function() {
         "dataType": "text",
         "type": "GET",
         "url": "/static/data_app/formatted.txt",
+        cache: false,
         "success": function(dataStr) {
             var data = eval('(' + dataStr + ')');
 
@@ -536,6 +543,7 @@ $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
     // draw the 'current' page
     oSettings.oApi._fnDraw(oSettings);
 };
+
 jQuery(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {
         var cookieValue = null;
