@@ -232,7 +232,7 @@ function tableInitialized() {
                         if(/[a-zA-Z]/.test(value)) {
                             aoColumns[column].sType = "string";
                         }else {
-                            aoColumns[column].sType = "numeric";
+                            aoColumns[column].sType = "course-numeric";
                         }
                         continue columnLoop;
                     }
@@ -595,3 +595,19 @@ jQuery(document).ajaxSend(function(event, xhr, settings) {
         xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
     }
 });
+jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+    "course-numeric-pre": function ( a ) {
+        if(a === "None" || a === "") {
+            a = "-1";
+        }
+        return parseFloat(a);
+    },
+
+    "course-numeric-asc": function ( a, b ) {
+        return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+
+    "course-numeric-desc": function ( a, b ) {
+        return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
+} );
