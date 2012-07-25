@@ -98,18 +98,25 @@ function tableInitialized() {
             }else {
                 show = false;
             }
-            $("#filterDivContainer").find(".filterDiv").each(function() {
-                var r = checkCondition(oSettings, aData, iDataIndex, $(this));
-                if(!r && andVor) {
-                    show = false;
-                    return;
-                }else if(r && !andVor) {
-                    show = true;
-                    return;
-                }
-            });
 
-            return show;
+            var filters = $("#filterDivContainer").find(".filterDiv");
+
+            if(filters.size() > 0) {
+                filters.each(function() {
+                    var r = checkCondition(oSettings, aData, iDataIndex, $(this));
+                    if(!r && andVor) {
+                        show = false;
+                        return;
+                    }else if(r && !andVor) {
+                        show = true;
+                        return;
+                    }
+                });
+
+                return show;
+            }else {
+                return true;
+            }
         }
     );
 
