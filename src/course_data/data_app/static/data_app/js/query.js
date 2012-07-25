@@ -1,4 +1,7 @@
 var CourseData = {
+    numericOperatorOptions: ['<', '>', '=', '<=', '>='],
+    stringOperatorOptions: ['equals', 'contains', 'startsWith'],
+
     fullyLoaded: false,
     masterDataTable: null,
     indexNums: null,
@@ -137,6 +140,8 @@ function tableInitialized() {
         '.ufd select change': function(el, ev) {
             var index = this.findIndex(el);
             this.options.filters[index].attr("selection", el.val());
+            var a = el.parents(".filterDiv").find(".filterOperator").get();
+            this.updateOptions(el.parents(".filterDiv").find(".filterOperator"), index);
             this.updateWorkspace();
         },
 
@@ -170,6 +175,23 @@ function tableInitialized() {
 
         updateWorkspace: function() {
             CourseData.workspace.attr("display.filters", this.options.filters);
+        },
+
+        updateOptions: function(item, index) {
+            var column = this.options.filters[index].attr("selection");
+            var options;
+            if(CourseData.masterDataTable.fnSettings().aoColumns[CourseData.indexNums[column]].sType === "string") {
+                options = CourseData.stringOperatorOptions;
+            }else {
+                options = CourseData.numericOperatorOptions;
+            }
+
+            item.children("option").remove();
+            for(var option in options) {
+                item.append("<option " + (option === 0? "selected='selected'" : "") + ">" + options[option] + "</option>");
+            }
+
+            this.options.filters[index].attr("operator", options[0]);
         }
     });
 
@@ -357,16 +379,16 @@ function tableInitialized() {
         }
         var columns = new can.Observe.List(CourseData.workspace.display.columns);
 
+        new ColumnsControl('#userTable', {
+            columns: columns
+        });
+
         new FiltersControl('#filterDivContainer', {
             filters: filters
         });
 
         new AndVOrControl('#andVorDiv', {
             andVor: andVor
-        });
-
-        new ColumnsControl('#userTable', {
-            columns: columns
         });
 
         new VisControl('#visDialogContainer');

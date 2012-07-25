@@ -9,9 +9,16 @@
     }) %>
 
     <select class="filterOperator">
-        <% var options = ['<', '>', '=', '<=', '>=', 'equals', 'contains', 'startsWith'];
-            for(option in options) { %>
-                <option class="num" <%= filter.attr('operator') === options[option]? "selected='selected'" : "" %>><%= options[option] %></option>
+        <%  var options;
+            calculateIndexNums();
+            if(CourseData.masterDataTable.fnSettings().aoColumns[CourseData.indexNums[filter.selection]].sType === "string") {
+                options = CourseData.stringOperatorOptions;
+            }else {
+                options = CourseData.numericOperatorOptions;
+            }
+
+            for(var option in options) { %>
+                <option <%= filter.attr('operator') === options[option]? "selected='selected'" : "" %>><%= options[option] %></option>
             <% } %>
     </select>
     <input type="text" name="filterText" class="filterText" <%= "value='" + filter.attr('text') + "'"%> />
