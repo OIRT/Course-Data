@@ -4,12 +4,15 @@ var CourseData = {
 
     fullyLoaded: false,
     masterDataTable: null,
-    indexNums: null,
+    indexNums: null, // Relates column title to index
     workspace: null,
 
     workspaceUpdater: null,
     workspaceUpdateTime: null,
 
+    // Sets up a function that will push the current workspace up to the
+    // server.  However, to avoid multiple requests in a brief period,
+    // it waits until everything has settled for several seconds.
     postWorkspace: function() {
         CourseData.workspaceUpdateTime = new Date().getTime() + 6000;
         if(CourseData.workspaceUpdater === null) {
@@ -177,6 +180,10 @@ function tableInitialized() {
             CourseData.workspace.attr("display.filters", this.options.filters);
         },
 
+        // Updates the options in the operator dropdown based on the column selected
+        // in the filter dropdown. In this way, it'll only show string-based operators
+        // to filters with a string column selected, and numeric operators to filters
+        // with a numeric column selected.  The operator lists are stored in CourseData.
         updateOptions: function(item, oldSelection, index) {
             var column = this.options.filters[index].attr("selection");
             var options;
@@ -364,6 +371,7 @@ function tableInitialized() {
         }
     }, {});
 
+    // Grab a workspace object and then configure the view to match its preferences
     Workspace.findOne({"id": "500d6b12b1bf6a0381000000"}, function(ws) {
         CourseData.workspace = ws;
         CourseData.workspace["id"] = CourseData.workspace["_id"]["$oid"];
@@ -602,6 +610,7 @@ $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
     oSettings.oApi._fnDraw(oSettings);
 };
 
+// Ensures the CSRF header is configured, to prevent XSS
 jQuery(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {
         var cookieValue = null;
