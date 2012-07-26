@@ -300,7 +300,7 @@ function tableInitialized() {
                 }
             }
 
-            columns.attr(newColumns);
+            CourseData.workspace.attr("display.columns", newColumns);
         }
     });
 
