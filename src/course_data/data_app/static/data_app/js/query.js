@@ -139,9 +139,9 @@ function tableInitialized() {
 
         '.ufd select change': function(el, ev) {
             var index = this.findIndex(el);
+            var oldSelection = this.options.filters[index].attr("selection");
             this.options.filters[index].attr("selection", el.val());
-            var a = el.parents(".filterDiv").find(".filterOperator").get();
-            this.updateOptions(el.parents(".filterDiv").find(".filterOperator"), index);
+            this.updateOptions(el.parents(".filterDiv").find(".filterOperator"), oldSelection, index);
             this.updateWorkspace();
         },
 
@@ -177,21 +177,24 @@ function tableInitialized() {
             CourseData.workspace.attr("display.filters", this.options.filters);
         },
 
-        updateOptions: function(item, index) {
+        updateOptions: function(item, oldSelection, index) {
             var column = this.options.filters[index].attr("selection");
             var options;
-            if(CourseData.masterDataTable.fnSettings().aoColumns[CourseData.indexNums[column]].sType === "string") {
-                options = CourseData.stringOperatorOptions;
-            }else {
-                options = CourseData.numericOperatorOptions;
-            }
+            var aoColumns = CourseData.masterDataTable.fnSettings().aoColumns;
+            if(aoColumns[CourseData.indexNums[column]].sType !== aoColumns[CourseData.indexNums[oldSelection]].sType) {
+                if(aoColumns[CourseData.indexNums[column]].sType === "string") {
+                    options = CourseData.stringOperatorOptions;
+                }else {
+                    options = CourseData.numericOperatorOptions;
+                }
 
-            item.children("option").remove();
-            for(var option in options) {
-                item.append("<option " + (option === 0? "selected='selected'" : "") + ">" + options[option] + "</option>");
-            }
+                item.children("option").remove();
+                for(var option in options) {
+                    item.append("<option " + (option === 0? "selected='selected'" : "") + ">" + options[option] + "</option>");
+                }
 
-            this.options.filters[index].attr("operator", options[0]);
+                this.options.filters[index].attr("operator", options[0]);
+            }
         }
     });
 
