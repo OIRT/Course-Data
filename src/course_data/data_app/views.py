@@ -17,11 +17,21 @@ import json
 # Utility functions
 #####
 
+TABLE_STUDENT_INCLUDE = ['firstname','lastname','nickname','email','netid']
 
 def all_workspace_students(workspace):
     return User.objects(Q(courses__id__in=workspace.rosters) |
                             Q(id__in=workspace.extras))
                             
+def student_data_table(students):
+    headers = TABLE_STUDENT_INCLUDE
+    studentdata = dict((s.rcpid, []) for s in students)
+    for s in students:
+        row = []
+        for h in headers:
+            row.append(s[h])
+        studentdata[s.rcpid].extend(row)
+    return studentdata
 
 def merge_gradebooks_for_students(students,gradebooks):
     # Unique list of all gradebook headers
@@ -159,18 +169,30 @@ def table(request, wid):
     gradebooks = Gradebook.objects(id__in=ws.gradebooks)
     rcpids = []
     studentdata = {}
-    
-    studentdata = merge_gradebooks_for_students(students,gradebooks)
+    gradebookdata = {}
+    userheaders = TABLE_STUDENT_INCLUDE
+    studentdata = student_data_table(students)
+    gradebookdata = merge_gradebooks_for_students(students,gradebooks)
 
     # Combine all the data into a table format
     headers = ['rcpid']
-    headers.extend(studentdata.itervalues().next().keys())
+    headers.extend(userheaders)
+    gradeheaders = gradebookdata.itervalues().next().keys()
+    filler = [''] * len(gradeheaders)
+    headers.extend(gradeheaders)
+
     tabledata = []
     tabledata.append(headers)
-    for person,grades in studentdata.iteritems():
+#    for person,grades in gradebookdata.iteritems():
+    for s in students:
+        person = s.rcpid
         row = [person]
-        row.extend(grades.values())
+        row.extend(studentdata[person])
+        if person in gradebookdata.iterkeys():
+            row.extend(gradebookdata[person].values())
+        else:
+            row.extend(filler)
         tabledata.append(row)
-        
+
     jsonstr = json.dumps(tabledata)
     return HttpResponse(jsonstr, mimetype="application/json")
