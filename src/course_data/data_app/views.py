@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, render
 from django.template.context import RequestContext
 from django.views.decorators.http import require_POST
@@ -22,7 +22,8 @@ TABLE_STUDENT_INCLUDE = ['firstname','lastname','nickname','email','netid']
 def all_workspace_students(workspace):
     return User.objects(Q(courses__id__in=workspace.rosters) |
                             Q(id__in=workspace.extras))
-                            
+
+
 def student_data_table(students):
     headers = TABLE_STUDENT_INCLUDE
     studentdata = dict((s.rcpid, []) for s in students)
@@ -33,15 +34,16 @@ def student_data_table(students):
         studentdata[s.rcpid].extend(row)
     return studentdata
 
+
 def merge_gradebooks_for_students(students,gradebooks):
     # Unique list of all gradebook headers
     all_gradebook_items = list(chain.from_iterable([gb.items for gb in gradebooks]))
     gradebook_headers = set([i.name for i in all_gradebook_items])
 
-    # Initialize a dict containing all students each with all gradebook headers, 
+    # Initialize a dict containing all students each with all gradebook headers,
     # and default values of '' for each assignment
     data = dict((h,'') for h in gradebook_headers)
-    studentdata = dict((s.rcpid, data.copy()) for s in students) 
+    studentdata = dict((s.rcpid, data.copy()) for s in students)
     #assert False, [len(v.keys()) for k,v in studentdata.iteritems()]
     for gb in gradebooks:
         gbdict = gb.as_dict()
@@ -196,3 +198,10 @@ def table(request, wid):
 
     jsonstr = json.dumps(tabledata)
     return HttpResponse(jsonstr, mimetype="application/json")
+
+
+def upload(request, wid):
+    # Workspace ID: wid
+    # POST Data (short name, long name): request.POST
+    # Uploaded File: request.FILES
+    return HttpResponseRedirect("/userLookup")

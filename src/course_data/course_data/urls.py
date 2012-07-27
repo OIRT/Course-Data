@@ -19,4 +19,5 @@ urlpatterns = patterns('data_app.views',
     url(r'^data/workspace/(?P<wid>[0-9a-f]+)/$', 'workspace'),
     url(r'^data/email$', 'send_emails'),
     url(r'^data/table/(?P<wid>[0-9a-f]+)/$', 'table'),
+    url(r'^data/upload/(?P<wid>[0-9a-f]+)/$', 'upload')
 )

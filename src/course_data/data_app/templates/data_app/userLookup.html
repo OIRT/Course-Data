@@ -21,11 +21,6 @@
         <script language="javascript" src="{{ STATIC_URL }}lib/markitup/jquery.markitup.js"></script>
         <script language="javascript" src="{{ STATIC_URL }}lib/json2.js"></script>
         <script language="javascript" src="{{ STATIC_URL }}data_app/js/query.js" ></script>
-
-        <!-- For the File Uploader -->
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/uploader/jquery.plupload.queue/css/jquery.plupload.queue.css" />
-        <script language="javascript" src="{{ STATIC_URL }}lib/uploader/plupload.full.js" ></script>
-        <script language="javascript" src="{{ STATIC_URL }}lib/uploader/jquery.plupload.queue/jquery.plupload.queue.js" ></script>
     </head>
 
     <body>
@@ -63,10 +58,20 @@
         </div>
 
         <div id="uploadDiv">
-            <form id="uploadForm">
-                <div id="uploader">
-                    You don't seem to support any of our uploader options.  Please install Flash, or a more modern browser.
-                </div>
+            <form id="uploadForm" action="/data/upload/" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <td><label for="uLongname">Long Name:</label></td>
+                        <td><input type="text" name="longname" id="uLongname" /></td>
+                    </tr>
+                    <tr>
+                        <td><label for="uShortname">Short Name:</label></td>
+                        <td><input type="text" name="shortname" id="uShortname" /><br /></td>
+                    </tr>
+                </table>
+                <br />
+                <input type="file" name="fileUpload" />
             </form>
         </div>
     </body>
