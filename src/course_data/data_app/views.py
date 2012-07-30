@@ -161,7 +161,7 @@ def send_emails(request):
     send_mail(request.POST["subject"], template.render(context), "someone@else.com", ["emjeney@gmail.com"], fail_silently=False)
     return HttpResponse(simplejson.dumps({"results": request.POST["subject"]}), mimetype="application/json")
 
-def table(request, wid):
+def workspace_table_data(wid):
     """
         Collate and return a workspace's data as a list of rows.
         Each row starts with the person's id.
@@ -196,9 +196,12 @@ def table(request, wid):
             row.extend(filler)
         tabledata.append(row)
 
-    jsonstr = json.dumps(tabledata)
-    return HttpResponse(jsonstr, mimetype="application/json")
+    return tabledata
 
+def table(request, wid):
+    data = workspace_table_data(wid)
+    jsonstr = json.dumps(data)
+    return HttpResponse(jsonstr, mimetype="application/json")
 
 def upload(request, wid):
     # Workspace ID: wid
