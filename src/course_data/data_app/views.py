@@ -2,7 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, render
 from django.template.context import RequestContext
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.core.mail import send_mail
 from django.utils import simplejson
 from django.template import Template, Context
@@ -11,6 +11,7 @@ from data_app.models import *
 from mongoengine.queryset import Q
 from itertools import chain
 import json
+import csv
 
 
 #####
@@ -203,8 +204,19 @@ def table(request, wid):
     jsonstr = json.dumps(data)
     return HttpResponse(jsonstr, mimetype="application/json")
 
+@require_POST
 def upload(request, wid):
-    # Workspace ID: wid
-    # POST Data (short name, long name): request.POST
-    # Uploaded File: request.FILES
+    ws = get_document_or_404(Workspace, id=wid)
+    if 'shortname' in request.POST and request.POST['shortname'] != '':
+        doc = UserSubmittedData(shortname=request.POST['shortname'])
+    else:
+        return HttpResponse("Shortname is required.", status=400)
+    if 'longname' in request.POST:
+        doc.longname = request.POST['longname']
+    
+    file = request.FILES['file']
+    data = [row for row in csv.reader(file)]
+    doc.data = data
+    doc.workspaces.append(wid)
+    doc.save()
     return HttpResponseRedirect("/userLookup")

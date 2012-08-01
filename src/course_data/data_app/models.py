@@ -103,3 +103,17 @@ class Workspace(Document):
 
     def __unicode__(self):
         return "<%s>" % self.name
+
+class UserSubmittedData(Document):
+    id = ObjectIdField()
+    shortname = StringField(required=True)
+    longname = StringField()
+    owners = ListField(StringField())
+    workspaces = ListField(StringField())
+    data = ListField(ListField())
+
+    meta = {'allow_inheritance': False}
+    
+    def __unicode__(self):
+        return "<%s>" % self.shortname
+        
