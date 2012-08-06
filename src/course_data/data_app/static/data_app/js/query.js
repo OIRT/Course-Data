@@ -443,7 +443,7 @@ $(document).ready(function() {
             {
                 name:"Insert Variable",
                 replaceWith: function(markItUp) {
-                    return "{{" + $(".markItUpUfd input").val() + "}}";
+                    return "{{" + $(".markItUpUfd input").val().replace(/ /g, "_") + "}}";
                 }
             }
         ]
@@ -462,7 +462,20 @@ $(document).ready(function() {
                 text: "Send!",
                 "class": 'sendButton',
                 click: function() {
-                    var data = {"subject": $("#subject").val(), "body": $("#body").val()};
+                    $("#emailSuccess").hide("slideDown");
+                    $("#emailError").hide("slideDown");
+
+                    if($("#subject").val() === "") {
+                        $("#emailError").html("<strong>No E-Mails Sent:</strong> Please Enter a Subject.");
+                        $("#emailError").show("slideDown");
+                        return;
+                    }else if($("#body").val() === "") {
+                        $("#emailError").html("<strong>No E-Mails Sent:</strong> Please Enter a Message Body.");
+                        $("#emailError").show("slideDown");
+                        return;
+                    }
+
+                    var data = {"subject": $("#subject").val(), "body": $("#body").val(), "wid": "500d6b12b1bf6a0381000000"};
 
                     data.users = [];
                     var settings = CourseData.masterDataTable.fnSettings();
@@ -473,18 +486,28 @@ $(document).ready(function() {
                         data.users.push(rcpid);
                     }
 
+                    if(data.users.length === 0) {
+                        $("#emailError").html("No Users Are Selected to Receive E-Mails.");
+                        $("#emailError").show("slideDown");
+                        return;
+                    }
+
+                    $("#emailPending").show("slideDown");
+
                     $.ajax({
                         url: "/data/email",
                         type: "POST",
                         data: data,
                         success: function(data) {
-                            alert(data.results);
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            alert(errorThrown);
+                            $("#emailPending").hide("slideDown");
+                            if(data.result === "success") {
+                                $("#emailSuccess").show("slideDown");
+                            }else {
+                                $("#emailError").html(data.error);
+                                $("#emailError").show("slideDown");
+                            }
                         }
                     });
-                    $(this).dialog("close");
                 }
             }
         },

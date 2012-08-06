@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.core.mail import send_mail
 from django.utils import simplejson
-from django.template import Template, Context
+from django.template import Template, Context, TemplateSyntaxError
 from mongohelpers import get_document_or_404, documents_to_json, json_to_document
 from data_app.models import *
 from mongoengine.queryset import Q
@@ -157,10 +157,28 @@ def create_workspace(request):
 
 
 def send_emails(request):
-    template = Template(request.POST["body"])
-    context = Context({"firstname": "Eric", "lastname": "Jeney"})
-    send_mail(request.POST["subject"], template.render(context), "someone@else.com", ["emjeney@gmail.com"], fail_silently=False)
-    return HttpResponse(simplejson.dumps({"results": request.POST["subject"]}), mimetype="application/json")
+    try:
+        template = Template(request.POST["body"])
+        users = request.POST.getlist("users[]")
+        data = workspace_table_data(request.POST["wid"])
+        dataHeaders = data[0]
+        dataDict = dict((d[0], d) for d in data[1:])
+
+        for user in users:
+            contextDict = dict((head.replace(" ", "_"), value) for (head, value) in zip(dataHeaders, dataDict[int(user)]))
+            context = Context(contextDict)
+            send_mail(request.POST["subject"], template.render(context), "someone@else.com", [contextDict["email"]], fail_silently=False)
+
+        result = "success"
+        error = ""
+    except TemplateSyntaxError as ex:
+        result = "bad template"
+        error = "<strong>No E-Mails Sent:</strong> The template below is invalid."
+    except Exception as ex:
+        result = "error"
+        error = ex
+
+    return HttpResponse(simplejson.dumps({"result": result, "error": error}), mimetype="application/json")
 
 def workspace_table_data(wid):
     """
@@ -213,7 +231,7 @@ def upload(request, wid):
         return HttpResponse("Shortname is required.", status=400)
     if 'longname' in request.POST:
         doc.longname = request.POST['longname']
-    
+
     file = request.FILES['file']
     data = [row for row in csv.reader(file)]
     doc.data = data

@@ -11,7 +11,7 @@
     <select class="filterOperator">
         <%  var options;
             calculateIndexNums();
-            if(CourseData.masterDataTable.fnSettings().aoColumns[CourseData.indexNums[filter.selection]].sType === "string") {
+            if(filter.selection !== "" && CourseData.masterDataTable.fnSettings().aoColumns[CourseData.indexNums[filter.selection]].sType === "string") {
                 options = CourseData.stringOperatorOptions;
             }else {
                 options = CourseData.numericOperatorOptions;

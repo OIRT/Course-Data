@@ -47,6 +47,14 @@
             <button id="sendEmail" class="jq-button">Send These People E-Mails</button>
             <div id="emailDialog">
                 <div id="emailForm">
+                    <div id="emailStatusDiv">
+                        <div id="emailSuccess" class="emailStatus" style="display:none">E-Mails Sent Successfully!</div>
+                        <div id="emailError" class="emailStatus" style="display:none"></div>
+                        <div id="emailPending" class="emailStatus" style="display:none">
+                            <img src="/static/data_app/images/loading.gif" height="24" width="24" style="vertical-align:middle" />
+                            <span>Sending ...</span></div>
+                    </div>
+
                     <form name="email" action="">
                         <label for="subject">Subject:</label>
                         <input type="text" name="subject" id="subject" value="" size="59" />
