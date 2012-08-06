@@ -93,7 +93,6 @@ function updateColumnVisibility() {
 }
 
 function tableInitialized() {
-    console.timeEnd("Initialize");
     $.fn.dataTableExt.afnFiltering.push(
         function(oSettings, aData, iDataIndex) {
             calculateIndexNums();
@@ -189,8 +188,10 @@ function tableInitialized() {
             var column = this.options.filters[index].attr("selection");
             var options;
             var aoColumns = CourseData.masterDataTable.fnSettings().aoColumns;
-            if(aoColumns[CourseData.indexNums[column]].sType !== aoColumns[CourseData.indexNums[oldSelection]].sType) {
-                if(aoColumns[CourseData.indexNums[column]].sType === "string") {
+            if(CourseData.indexNums[oldSelection] === undefined || CourseData.indexNums[column] === undefined ||
+                    aoColumns[CourseData.indexNums[column]].sType !== aoColumns[CourseData.indexNums[oldSelection]].sType) {
+
+                if(CourseData.indexNums[column] !== undefined && aoColumns[CourseData.indexNums[column]].sType === "string") {
                     options = CourseData.stringOperatorOptions;
                 }else {
                     options = CourseData.numericOperatorOptions;
@@ -515,7 +516,6 @@ $(document).ready(function() {
         "success": function(dataStr) {
             var data = eval('(' + dataStr + ')');
 
-            console.time("Manipulate");
             var tempColumns = data[0];
             var aoColumns = [];
             for(var column in tempColumns) {
@@ -523,9 +523,7 @@ $(document).ready(function() {
             }
             data.splice(0, 1); // Remove the list of column headers
             var aaData = data;
-            console.timeEnd("Manipulate");
 
-            console.time("Initialize");
             CourseData.masterDataTable = $("#userTable").dataTable({
                 "bJQueryUI": true,
                 "bProcessing": true,
