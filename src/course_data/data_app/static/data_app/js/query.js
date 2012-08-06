@@ -93,6 +93,7 @@ function updateColumnVisibility() {
 }
 
 function tableInitialized() {
+    console.timeEnd("Initialize");
     $.fn.dataTableExt.afnFiltering.push(
         function(oSettings, aData, iDataIndex) {
             calculateIndexNums();
@@ -508,11 +509,23 @@ $(document).ready(function() {
     $.ajax( {
         "dataType": "text",
         "type": "GET",
-        "url": "/static/data_app/formatted.txt",
+//        "url": "/static/data_app/formatted.txt",
+        "url": "/data/table/500d6b12b1bf6a0381000000/",
         cache: false,
         "success": function(dataStr) {
             var data = eval('(' + dataStr + ')');
 
+            console.time("Manipulate");
+            var tempColumns = data[0];
+            var aoColumns = [];
+            for(var column in tempColumns) {
+                aoColumns.push({"sTitle": tempColumns[column]});
+            }
+            data.splice(0, 1); // Remove the list of column headers
+            var aaData = data;
+            console.timeEnd("Manipulate");
+
+            console.time("Initialize");
             CourseData.masterDataTable = $("#userTable").dataTable({
                 "bJQueryUI": true,
                 "bProcessing": true,
@@ -525,8 +538,8 @@ $(document).ready(function() {
                     "fnReorderCallback": updateColumnWorkspace
                 },
 
-                "aaData": data.aaData,
-                "aoColumns": data.aoColumns
+                "aaData": aaData,
+                "aoColumns": aoColumns
             });
 
             tableInitialized();
