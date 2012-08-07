@@ -71,14 +71,14 @@ class Gradebook(Document):
 
     def __unicode__(self):
         return self.gradebook
-        
+
     def rcpid_list(self):
         return [s.rcpid for s in self.entries]
-        
+
     def scores_for_rcpid(self, rcpid):
         scores = [e.entries for e in self.entries if e['rcpid'] == rcpid]
         return scores[0] if scores else None
-        
+
     def headers(self):
         return [i.name for i in self.items]
 
@@ -93,12 +93,12 @@ class Gradebook(Document):
 class Workspace(Document):
     id = ObjectIdField()
     name = StringField(required=True)
-    owners = ListField(StringField(),required=True)
+    owners = ListField(StringField(), required=True)
     rosters = ListField(StringField())
     extras = ListField(StringField())
-    display = DictField()
+    displays = ListField(DictField())
     gradebooks = ListField(StringField())
-    
+
     meta = {'allow_inheritance': False}
 
     def __unicode__(self):
@@ -113,7 +113,6 @@ class UserSubmittedData(Document):
     data = ListField(ListField())
 
     meta = {'allow_inheritance': False}
-    
+
     def __unicode__(self):
         return "<%s>" % self.shortname
-        

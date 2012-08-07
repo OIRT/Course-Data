@@ -2,6 +2,10 @@ var CourseData = {
     numericOperatorOptions: ['<', '>', '=', '<=', '>='],
     stringOperatorOptions: ['equals', 'contains', 'startsWith'],
 
+    workspaceId: null,
+    dIndex: null,
+    displayName: null,
+
     fullyLoaded: false,
     masterDataTable: null,
     indexNums: null, // Relates column title to index
@@ -24,7 +28,19 @@ var CourseData = {
                 }
             }, 1500);
         }
-    }
+    },
+
+    Workspace: can.Model({
+        findOne : function(options) {
+            return $.ajax({
+                url: '/data/workspace/' + options.id + '/',
+                cache: false // Required so IE doesn't cache the response
+            });
+        },
+        update  : function(id, ws) {
+            return $.post('/data/workspace/' + id + '/', JSON.stringify(ws));
+        }
+    }, {})
 };
 
 function compareValues(a, b, operator) {
@@ -78,7 +94,7 @@ function updateColumnWorkspace() {
             }
         }
 
-        CourseData.workspace.attr("display.columns", columns);
+        CourseData.workspace.displays[CourseData.dIndex].attr("columns", columns);
     }
 }
 
@@ -177,7 +193,7 @@ function tableInitialized() {
         },
 
         updateWorkspace: function() {
-            CourseData.workspace.attr("display.filters", this.options.filters);
+            CourseData.workspace.displays[CourseData.dIndex].attr("filters", this.options.filters);
         },
 
         // Updates the options in the operator dropdown based on the column selected
@@ -216,7 +232,7 @@ function tableInitialized() {
 
         '#andVor change': function(el, ev) {
             this.options.andVor.attr("andVor", (el.val() === "all"? "and" : "or"));
-            CourseData.workspace.attr("display.andVor", (el.val() === "all"? "and" : "or"));
+            CourseData.workspace.displays[CourseData.dIndex].attr("andVor", (el.val() === "all"? "and" : "or"));
         }
     });
 
@@ -281,21 +297,21 @@ function tableInitialized() {
             }
 
             // Restore sorting order from workspace
-            if(CourseData.workspace.display.sorting) {
-                oSettings.aaSorting[0][0] = CourseData.indexNums[CourseData.workspace.display.sorting.column];
-                oSettings.aaSorting[0][1] = CourseData.workspace.display.sorting.direction;
-                oSettings.aaSorting[0][2] = CourseData.workspace.display.sorting.direction === "asc"? 0 : 1;
+            if(CourseData.workspace.displays[CourseData.dIndex].sorting) {
+                oSettings.aaSorting[0][0] = CourseData.indexNums[CourseData.workspace.displays[CourseData.dIndex].sorting.column];
+                oSettings.aaSorting[0][1] = CourseData.workspace.displays[CourseData.dIndex].sorting.direction;
+                oSettings.aaSorting[0][2] = CourseData.workspace.displays[CourseData.dIndex].sorting.direction === "asc"? 0 : 1;
             }else {
-                CourseData.workspace.display.attr({sorting: {column: "", direction: ""}});
+                CourseData.workspace.displays[CourseData.dIndex].attr({sorting: {column: "", direction: ""}});
             }
 
             CourseData.masterDataTable.bind('sort', function() {
                 var sortData = oSettings.aaSorting[0];
-                if(!CourseData.workspace.display.sorting ||
-                        CourseData.workspace.display.sorting.column !== oSettings.aoColumns[sortData[0]].sTitle ||
-                        CourseData.workspace.display.sorting.direction !== sortData[2]) {
-                    CourseData.workspace.attr("display.sorting.column", oSettings.aoColumns[sortData[0]].sTitle);
-                    CourseData.workspace.attr("display.sorting.direction", sortData[1]);
+                if(!CourseData.workspace.displays[CourseData.dIndex].sorting ||
+                        CourseData.workspace.displays[CourseData.dIndex].sorting.column !== oSettings.aoColumns[sortData[0]].sTitle ||
+                        CourseData.workspace.displays[CourseData.dIndex].sorting.direction !== sortData[2]) {
+                    CourseData.workspace.displays[CourseData.dIndex].attr("sorting.column", oSettings.aoColumns[sortData[0]].sTitle);
+                    CourseData.workspace.displays[CourseData.dIndex].attr("sorting.direction", sortData[1]);
                 }
             });
         },
@@ -312,7 +328,7 @@ function tableInitialized() {
                 }
             }
 
-            CourseData.workspace.attr("display.columns", newColumns);
+            CourseData.workspace.displays[CourseData.dIndex].attr("columns", newColumns);
         }
     });
 
@@ -361,36 +377,30 @@ function tableInitialized() {
         }
     });
 
-    var Workspace = can.Model({
-        findOne : function(options) {
-            return $.ajax({
-                url: '/data/workspace/' + options.id + '/',
-                cache: false // Required so IE doesn't cache the response
-            });
-        },
-        update  : function(id, ws) {
-            return $.post('/data/workspace/' + id + '/', JSON.stringify(ws));
-        }
-    }, {});
 
     // Grab a workspace object and then configure the view to match its preferences
-    Workspace.findOne({"id": "500d6b12b1bf6a0381000000"}, function(ws) {
+    CourseData.Workspace.findOne({"id": CourseData.workspaceId}, function(ws) {
         CourseData.workspace = ws;
+
+        if(CourseData.dIndex < 0) {
+            appendNewDisplayToWorkspace();
+        }
+
         CourseData.workspace["id"] = CourseData.workspace["_id"]["$oid"];
-        if(!CourseData.workspace.display.filters) {
-            CourseData.workspace.display.filters = [];
+        if(!CourseData.workspace.displays[CourseData.dIndex].filters) {
+            CourseData.workspace.displays[CourseData.dIndex].filters = [];
         }
-        var filters = new can.Observe.List(CourseData.workspace.display.filters);
+        var filters = new can.Observe.List(CourseData.workspace.displays[CourseData.dIndex].filters);
 
-        if(!CourseData.workspace.display.andVor) {
-            CourseData.workspace.display.andVor = can.Observe("and");
+        if(!CourseData.workspace.displays[CourseData.dIndex].andVor) {
+            CourseData.workspace.displays[CourseData.dIndex].andVor = can.Observe("and");
         }
-        var andVor = new can.Observe().attr("andVor", CourseData.workspace.display.andVor);
+        var andVor = new can.Observe().attr("andVor", CourseData.workspace.displays[CourseData.dIndex].andVor);
 
-        if(!CourseData.workspace.display.columns) {
-            CourseData.workspace.display.columns = [];
+        if(!CourseData.workspace.displays[CourseData.dIndex].columns) {
+            CourseData.workspace.displays[CourseData.dIndex].columns = [];
         }
-        var columns = new can.Observe.List(CourseData.workspace.display.columns);
+        var columns = new can.Observe.List(CourseData.workspace.displays[CourseData.dIndex].columns);
 
         new ColumnsControl('#userTable', {
             columns: columns
@@ -428,11 +438,182 @@ function tableInitialized() {
         });
 
         CourseData.fullyLoaded = true;
+
+        $("#loadingDialog").dialog("close");
+        $("#mainDisplayDiv").show();
+        CourseData.masterDataTable.fnAdjustColumnSizing();
         CourseData.masterDataTable.fnDraw();
     });
 }
 
+function fetchTable() {
+    $.ajax( {
+        "dataType": "text",
+        "type": "GET",
+        "url": "/data/table/" + CourseData.workspaceId + "/",
+        cache: false,
+        "success": function(dataStr) {
+            var data = eval('(' + dataStr + ')');
+
+            var tempColumns = data[0];
+            var aoColumns = [];
+            for(var column in tempColumns) {
+                aoColumns.push({"sTitle": tempColumns[column]});
+            }
+            data.splice(0, 1); // Remove the list of column headers
+            var aaData = data;
+
+            CourseData.masterDataTable = $("#userTable").dataTable({
+                "bJQueryUI": true,
+                "bProcessing": true,
+                "sDom": 'R<"H"lr>t<"F"ip>',
+                "bScrollXInner": true,
+                "sScrollX": "100%",
+                "bScrollAutoCss": true,
+                "bDeferRender": true,
+                "oColReorder": {
+                    "fnReorderCallback": updateColumnWorkspace
+                },
+
+                "aaData": aaData,
+                "aoColumns": aoColumns
+            });
+
+            tableInitialized();
+        }
+    });
+}
+
+function removeDisplay(workspaceId, dIndex) {
+    CourseData.Workspace.findOne({"id": workspaceId}, function(ws) {
+        ws["id"] = ws["_id"]["$oid"];
+
+        ws.displays.splice(dIndex, 1);
+        ws.save(function() {
+            // Force a page refresh once the item is removed.
+            window.location.reload(true);
+        });
+    });
+}
+
+function addNewDisplay(workspaceId) {
+    CourseData.workspaceId = workspaceId;
+    CourseData.dIndex = -1;
+
+    var closedByUser = true;
+
+    $("#pickWorkspaceDialog").dialog("close");
+    $("#newDisplayDialog").dialog({
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 400,
+        closeOnEscape: false,
+        title: "Create New Display",
+        buttons: {
+            "Create!": {
+                text: "Create!",
+                click: function() {
+                    CourseData.displayName = $("#newDisplayName").val();
+                    closedByUser = false;
+                    $(this).dialog("close");
+                    $("#loadingDialog").dialog("open");
+                    fetchTable();
+                }
+            }
+        },
+
+        // If the user backs out of creating a new display, this will open
+        // up the picker again.
+        close: function() {
+            if(closedByUser) {
+                $("#pickWorkspaceDialog").dialog("open");
+            }
+        },
+        dialogClass: "centerText"
+    });
+
+    var buttons = $('#newDisplayDialog').dialog('option', 'buttons');
+
+    $.each(buttons, function(buttonIndex, button) {
+        button.disabled = true;
+    });
+    $("#newDisplayDialog").dialog("option", "buttons", buttons);
+
+    $("#newDisplayName").bind("keyup", function() {
+        $.each(buttons, function(buttonIndex, button) {
+            if($("#newDisplayName").val().length > 0) {
+                button.disabled = false;
+            }else {
+                button.disabled = true;
+            }
+        });
+
+        $("#newDisplayDialog").dialog("option", "buttons", buttons);
+    });
+}
+
+function appendNewDisplayToWorkspace() {
+    CourseData.workspace.displays.push({
+        "andVor" : "and",
+        "sorting" : {
+            "column" : "lastname",
+            "direction" : "desc"
+        },
+        "columns" : [
+            "lastname",
+            "firstname",
+            "email"
+        ],
+        "filters" : [
+            {
+                "not" : false,
+                "operator" : "<",
+                "selection" : "",
+                "text" : ""
+            }
+        ],
+        "name" : CourseData.displayName
+    });
+    CourseData.dIndex = CourseData.workspace.displays.length - 1;
+}
+
 $(document).ready(function() {
+    $("#loadingDialog").dialog({
+        autoOpen: false,
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 400,
+        height: 168,
+        closeOnEscape: false,
+        dialogClass: "no-title"
+    });
+
+    $("#pickWorkspaceDialog").dialog({
+        autoOpen: true,
+        buttons: {
+            "Select!": {
+                text: "Select!",
+                click: function() {
+                    var workspaceInfo = $(".workspaceRadio:checked").val();
+                    var workspaceInfoSplit = workspaceInfo.split("--");
+                    CourseData.workspaceId = workspaceInfoSplit[0];
+                    CourseData.dIndex = parseInt(workspaceInfoSplit[1], 10);
+                    $(this).dialog("close");
+                    $("#loadingDialog").dialog("open");
+                    fetchTable();
+                }
+            }
+        },
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 700,
+        closeOnEscape: false,
+        title: "Select a Workspace",
+        dialogClass: "no-close"
+    });
 
     markItUpSettings = {
         onTab:          {keepDefault:false, replaceWith:'    '},
@@ -535,44 +716,11 @@ $(document).ready(function() {
         }else {
             $(".sendButton span").text("Send " + numEmails + " E-Mail!");
         }
+
+        $("#emailStatusDiv div").hide();
+        $("#templateHelp").hide();
+
         $("#emailDialog").dialog('open');
-    });
-
-    $.ajax( {
-        "dataType": "text",
-        "type": "GET",
-//        "url": "/static/data_app/formatted.txt",
-        "url": "/data/table/500d6b12b1bf6a0381000000/",
-        cache: false,
-        "success": function(dataStr) {
-            var data = eval('(' + dataStr + ')');
-
-            var tempColumns = data[0];
-            var aoColumns = [];
-            for(var column in tempColumns) {
-                aoColumns.push({"sTitle": tempColumns[column]});
-            }
-            data.splice(0, 1); // Remove the list of column headers
-            var aaData = data;
-
-            CourseData.masterDataTable = $("#userTable").dataTable({
-                "bJQueryUI": true,
-                "bProcessing": true,
-                "sDom": 'R<"H"lr>t<"F"ip>',
-                "bScrollXInner": true,
-                "sScrollX": "100%",
-                "bScrollAutoCss": true,
-                "bDeferRender": true,
-                "oColReorder": {
-                    "fnReorderCallback": updateColumnWorkspace
-                },
-
-                "aaData": aaData,
-                "aoColumns": aoColumns
-            });
-
-            tableInitialized();
-        }
     });
 
     $("#uploadDiv").dialog({

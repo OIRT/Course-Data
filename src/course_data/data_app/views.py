@@ -24,6 +24,8 @@ def all_workspace_students(workspace):
     return User.objects(Q(courses__id__in=workspace.rosters) |
                             Q(id__in=workspace.extras))
 
+def all_workspaces_for_user(user):
+    return Workspace.objects(owners=user)
 
 def student_data_table(students):
     headers = TABLE_STUDENT_INCLUDE
@@ -97,7 +99,8 @@ def users(request):
 
 @ensure_csrf_cookie
 def userLookup(request):
-    return render_to_response('data_app/userLookup.html', {}, context_instance=RequestContext(request))
+    context = {"workspaces": all_workspaces_for_user("Eric")}
+    return render_to_response('data_app/userLookup.html', Context(context), context_instance=RequestContext(request))
 
 
 def data_index(request):
@@ -135,6 +138,12 @@ def fetch_workspace_users(request, wid):
     ws = get_document_or_404(Workspace, id=wid)
     students = all_workspace_students(ws)
     jsonstr = documents_to_json(students)
+    return HttpResponse(jsonstr, mimetype="application/json")
+
+
+def fetch_workspaces_for_user(request, uid):
+    workspaces = all_workspaces_for_user(uid)
+    jsonstr = documents_to_json(workspaces)
     return HttpResponse(jsonstr, mimetype="application/json")
 
 
