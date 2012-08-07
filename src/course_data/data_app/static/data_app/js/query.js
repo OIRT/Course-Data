@@ -445,6 +445,13 @@ $(document).ready(function() {
                 replaceWith: function(markItUp) {
                     return "{{" + $(".markItUpUfd input").val().replace(/ /g, "_") + "}}";
                 }
+            },
+            {
+                name:"Help",
+                beforeInsert: function() {
+                    $("#templateHelp").toggle("slideDown");
+                }
+
             }
         ]
     };
@@ -464,6 +471,7 @@ $(document).ready(function() {
                 click: function() {
                     $("#emailSuccess").hide("slideDown");
                     $("#emailError").hide("slideDown");
+                    $("#templateHelp").hide("slideDown");
 
                     if($("#subject").val() === "") {
                         $("#emailError").html("<strong>No E-Mails Sent:</strong> Please Enter a Subject.");
