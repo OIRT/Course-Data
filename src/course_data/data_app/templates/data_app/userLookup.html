@@ -98,7 +98,7 @@
                                 <li class="displayListLi">
                                     <input class="workspaceRadio" type="radio" name="display" value="{{workspace.id}}--{{ forloop.counter0 }}">{{ display.name }}</input>
 
-                                    <a href="javascript:void(0)" height="16" width="16" onclick="removeDisplay('{{workspace.id}}', {{ forloop.counter0 }}); return false;"><img src="/static/data_app/images/delete.png" alt="Add New" /></a>
+                                    <a href="javascript:void(0)" height="16" width="16" onclick="removeDisplay('{{workspace.id}}', {{ forloop.counter0 }}, '{{display.name}}'); return false;"><img src="/static/data_app/images/delete.png" alt="Add New" /></a>
 
                                 </li>
                             {% endfor %}
@@ -115,6 +115,10 @@
         <div id="loadingDialog">
              <img src="/static/data_app/images/loading.gif" height="36" width="36" style="vertical-align:middle" />
              <span id="loadingText">Loading Student Data ...</span>
-         </div>
+        </div>
+
+        <div id="confirmDeleteDialog">
+            <div id="deleteText"></div>
+        </div>
     </body>
 </html>

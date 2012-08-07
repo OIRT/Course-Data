@@ -484,14 +484,34 @@ function fetchTable() {
     });
 }
 
-function removeDisplay(workspaceId, dIndex) {
+function removeDisplay(workspaceId, dIndex, name) {
     CourseData.Workspace.findOne({"id": workspaceId}, function(ws) {
         ws["id"] = ws["_id"]["$oid"];
 
-        ws.displays.splice(dIndex, 1);
-        ws.save(function() {
-            // Force a page refresh once the item is removed.
-            window.location.reload(true);
+        $("#deleteText").html("Are you sure you want to delete <b>\"" + name + "\"</b>?");
+
+        $("#confirmDeleteDialog").dialog({
+            autoOpen: true,
+            modal: true,
+            draggable: false,
+            resizable: false,
+            closeOnEscape: false,
+            title: "Are you sure?",
+            buttons: {
+                "Cancel": function() {
+                    $(this).dialog("close");
+                },
+                "Delete!": {
+                    text: "Delete!",
+                    click: function() {
+                        ws.displays.splice(dIndex, 1);
+                        ws.save(function() {
+                            // Force a page refresh once the item is removed.
+                            window.location.reload(true);
+                        });
+                    }
+                }
+            }
         });
     });
 }

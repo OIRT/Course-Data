@@ -12,7 +12,7 @@ from mongoengine.queryset import Q
 from itertools import chain
 import json
 import csv
-
+from operator import attrgetter
 
 #####
 # Utility functions
@@ -99,7 +99,9 @@ def users(request):
 
 @ensure_csrf_cookie
 def userLookup(request):
-    context = {"workspaces": all_workspaces_for_user("Eric")}
+    workspaces = all_workspaces_for_user("Eric")
+    workspaces = sorted(workspaces, key=attrgetter('name'))
+    context = {"workspaces": workspaces}
     return render_to_response('data_app/userLookup.html', Context(context), context_instance=RequestContext(request))
 
 
