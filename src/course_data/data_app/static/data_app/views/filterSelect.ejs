@@ -1,7 +1,7 @@
 <% var filterDefined = typeof filter !== 'undefined'; %>
 <select class="filterSelect" <%= filterDefined? "value='" + filter.attr('selection') + "'" : "" %>>
     <option></option>
-    <% aoColumns = CourseData.masterDataTable.fnSettings().aoColumns;
+    <% var aoColumns = CourseData.alphabetizedColumns;
     for(var c in aoColumns) { %>
         <option <%= "value=\"" + aoColumns[c].sTitle + "\"" %>
             <% if(filterDefined && aoColumns[c].sTitle === filter.attr('selection')) { %>
