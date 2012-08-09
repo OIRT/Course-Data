@@ -19,7 +19,6 @@ RSYNC_EXCLUDE = (
     '*.sample',
     'fabfile.py',
     'bootstrap.py',
-    '*.css',
     '*.sassc',
 )
 env.home = '/usr/cddeploy/'
@@ -65,11 +64,13 @@ def create_virtualenv():
     run('virtualenv %s %s' % (args, env.virtualenv_root))
     run('source %s' % os.path.join(env.root, 'env', 'bin', 'activate'))
 
+
 def _run_in_virtualenv(command):
     require('root', provided_by=('staging', 'production'))
     cmd = 'source ' + env.root + '/env/bin/activate'
     cmd += ' && ' + command
     run(cmd)
+
 
 def deploy():
     """ deploys code to the server and prepares it to execute """
@@ -77,6 +78,7 @@ def deploy():
     collectstatic()
     compile_sass()
     touch()
+
 
 def copy_code():
     """ rsync code to remote host """
@@ -131,34 +133,34 @@ def update_apache_config():
     apache_reload()
 
 
-def configtest():    
+def configtest():
     """ test Apache configuration """
     require('root', provided_by=('staging', 'production'))
     run('apachectl configtest')
 
 
-def apache_reload():    
+def apache_reload():
     """ reload Apache on remote host """
     require('root', provided_by=('staging', 'production'))
     run('sudo /etc/init.d/httpd reload')
 
 
-def apache_restart():    
+def apache_restart():
     """ restart Apache on remote host """
     require('root', provided_by=('staging', 'production'))
     run('sudo /etc/init.d/httpd restart')
+
 
 def collectstatic():
     """ collect all static files into a single directory """
     require('root', provided_by=('staging', 'production'))
     with cd(env.code_root):
         run("rm -rf src/static/")
-        _run_in_virtualenv("python src/course_data/manage.py collectstatic --noinput -v0 --settings=settings_" + env.environment)
+        _run_in_virtualenv("python src/course_data/manage.py collectstatic --noinput -v0 --settings=course_data.settings_" + env.environment)
+
 
 def compile_sass():
     """ compile all of the SASS files on the server """
     require('root', provided_by=('staging', 'production'))
     with cd(env.code_root):
         run("sass --update src/static/data_app/sass/:src/static/data_app/css/")
-
-

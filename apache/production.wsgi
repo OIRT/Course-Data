@@ -2,7 +2,7 @@ import os
 import sys
 import site
 
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__)) + "/../src/"
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__)) + "/../src/course_data/"
 print PROJECT_ROOT
 site_packages = os.path.join(PROJECT_ROOT, 'env/lib/python2.6/site-packages')
 site.addsitedir(os.path.abspath(site_packages))
