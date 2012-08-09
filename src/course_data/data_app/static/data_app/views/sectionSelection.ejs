@@ -1,0 +1,11 @@
+<div id="sectionSelectionDiv">
+    Which sections would you like to include?
+    <ul>
+        <% for(var section in sectionList) { %>
+            <li class="sectionSelector">
+                <input type="checkbox" checked="checked" id=<%= "sec-" + sectionList[section] %> />
+                <label for=<%= "sec-" + sectionList[section] %>><%= sectionList[section] %></label>
+            </li>
+        <% } %>
+    </ul>
+</div>

@@ -10,9 +10,9 @@ from mongohelpers import get_document_or_404, documents_to_json, json_to_documen
 from data_app.models import *
 from mongoengine.queryset import Q
 from itertools import chain
+from operator import attrgetter
 import json
 import csv
-from operator import attrgetter
 
 #####
 # Utility functions
@@ -159,10 +159,16 @@ def workspace(request, wid):
 
 
 @require_POST
+def fetch_gradebooks_for_sections(request):
+    gradebooks = Gradebook.objects(sections__in=[request.POST['sections[]']])
+    return HttpResponse(documents_to_json(gradebooks), mimetype="application/json")
+
+
+@require_POST
 def create_workspace(request):
     ws, created = json_to_document(Workspace, request.raw_post_data)
     if created:
-        return HttpResponse(status=201)
+        return HttpResponse(simplejson.dumps({"workspaceId": str(ws.id)}), mimetype="application/json")
     else:
         return HttpResponse(status=200)
 

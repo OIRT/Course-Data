@@ -11,20 +11,26 @@ var CourseData = {
     indexNums: null, // Relates column title to index
     workspace: null,
 
-    workspaceUpdater: null,
-    workspaceUpdateTime: null,
+    workspaceUpdater: null, // An interval object that continually checks if its time to push
+    workspaceUpdateTime: null, // The next time a workspace should be pushed
+    workspaceForcePush: false, // Should we push a new workspace immediately, without waiting
+                               // for workspaceUpdateTime to be reached?
+
+    newWorkspace: null,
+    newWorkspaceId: null,
 
     // Sets up a function that will push the current workspace up to the
     // server.  However, to avoid multiple requests in a brief period,
     // it waits until everything has settled for several seconds.
     postWorkspace: function() {
-        CourseData.workspaceUpdateTime = new Date().getTime() + 6000;
+        CourseData.workspaceUpdateTime = new Date().getTime() + 4000;
         if(CourseData.workspaceUpdater === null) {
             CourseData.workspaceUpdater = setInterval(function() {
-                if(new Date().getTime() > CourseData.workspaceUpdateTime) {
+                if(CourseData.workspaceForcePush || new Date().getTime() > CourseData.workspaceUpdateTime) {
                     CourseData.workspace.save();
                     clearInterval(CourseData.workspaceUpdater);
                     CourseData.workspaceUpdater = null;
+                    CourseData.workspaceForcePush = false;
                 }
             }, 1500);
         }
@@ -39,6 +45,11 @@ var CourseData = {
         },
         update  : function(id, ws) {
             return $.post('/data/workspace/' + id + '/', JSON.stringify(ws));
+        },
+        create  : function(ws) {
+            return $.post('/data/workspace/', JSON.stringify(ws), function(data) {
+                CourseData.newWorkspaceId = data.workspaceId;
+            });
         }
     }, {})
 };
@@ -519,6 +530,103 @@ function removeDisplay(workspaceId, dIndex, name) {
     });
 }
 
+function promptSectionSelection(sectionList) {
+    $("#sectionSelectionDialog").html(can.view('static/data_app/views/sectionSelection.ejs', {
+        sectionList: sectionList
+    }));
+
+    $("#sectionSelectionDialog").dialog({
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 700,
+        closeOnEscape: false,
+        title: "Select Sections",
+        buttons: {
+            "Cancel": {
+                text: "Cancel",
+                click: function() {
+                    $(this).dialog("close");
+                    $("#newWorkspaceDialog").dialog("open");
+                }
+            },
+            "Create!": {
+                text: "Create!",
+                click: function() {
+                    var finalSectionList = [];
+                    $(".sectionSelector").each(function(i, el) {
+                        if($(el).find("input").is(":checked")) {
+                            finalSectionList.push($(el).find("label").text());
+                        }
+                    });
+
+                    CourseData.newWorkspace.rosters = finalSectionList;
+
+                    var workspace = new CourseData.Workspace(CourseData.newWorkspace);
+                    var r = workspace.save(function(data) {
+                        data.id = CourseData.newWorkspaceId;
+                        $("#sectionSelectionDialog").dialog("close");
+                        addNewDisplay(data.id);
+                    });
+                }
+            }
+        },
+        dialogClass: "no-close"
+    });
+}
+
+function addNewWorkspace() {
+    $("#pickWorkspaceDialog").dialog("close");
+    $("#newWorkspaceDialog").dialog({
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 700,
+        closeOnEscape: false,
+        title: "Create New Workspace",
+        buttons: {
+            "Cancel": {
+                text: "Cancel",
+                click: function() {
+                    $(this).dialog("close");
+                    $("#pickWorkspaceDialog").dialog("open");
+                }
+            },
+            "Create!": {
+                text: "Create!",
+                click: function() {
+                    var sectionNumber = "";
+                    $(".sectionInput").each(function(i, el) {
+                        sectionNumber += $(el).val() + ":";
+                    });
+
+                    CourseData.newWorkspace = {};
+                    CourseData.newWorkspace.name = $("#workspaceNameInput").val();
+                    CourseData.newWorkspace.owners = ["Eric"];
+                    CourseData.newWorkspace.displays = [];
+                    CourseData.newWorkspace.gradebooks = [];
+
+                    var sectionList = [sectionNumber];
+                    $.post("/data/gradebooks/", {"sections": [sectionNumber]}, function(data) {
+                        for(var gradebook in data) {
+                            CourseData.newWorkspace.gradebooks.push(data[gradebook]["_id"]["$oid"]);
+                            for(var section in data[gradebook].sections) {
+                                if(sectionList.indexOf(data[gradebook].sections[section]) == -1) {
+                                    sectionList.push(data[gradebook].sections[section]);
+                                }
+                            }
+                        }
+
+                        $("#newWorkspaceDialog").dialog("close");
+                        promptSectionSelection(sectionList);
+                    });
+                }
+            }
+        },
+        dialogClass: "no-close"
+    });
+}
+
 function addNewDisplay(workspaceId) {
     CourseData.workspaceId = workspaceId;
     CourseData.dIndex = -1;
@@ -534,6 +642,13 @@ function addNewDisplay(workspaceId) {
         closeOnEscape: false,
         title: "Create New Display",
         buttons: {
+            "Cancel": {
+                text: "Cancel",
+                click: function() {
+                    $(this).dialog("close");
+                    $("#pickWorkspaceDialog").dialog("open");
+                }
+            },
             "Create!": {
                 text: "Create!",
                 click: function() {
@@ -542,30 +657,28 @@ function addNewDisplay(workspaceId) {
                     $(this).dialog("close");
                     $("#loadingDialog").dialog("open");
                     fetchTable();
+
+                    // Make sure the new display gets saved to the server.
+                    CourseData.workspaceForcePush = true;
+                    CourseData.postWorkspace();
                 }
             }
         },
-
-        // If the user backs out of creating a new display, this will open
-        // up the picker again.
-        close: function() {
-            if(closedByUser) {
-                $("#pickWorkspaceDialog").dialog("open");
-            }
-        },
-        dialogClass: "centerText"
+        dialogClass: "centerText no-close"
     });
 
     var buttons = $('#newDisplayDialog').dialog('option', 'buttons');
 
     $.each(buttons, function(buttonIndex, button) {
-        button.disabled = true;
+        if(button.text === "Create!") {
+            button.disabled = true;
+        }
     });
     $("#newDisplayDialog").dialog("option", "buttons", buttons);
 
     $("#newDisplayName").bind("keyup", function() {
         $.each(buttons, function(buttonIndex, button) {
-            if($("#newDisplayName").val().length > 0) {
+            if(button.text !== "Create!" || $("#newDisplayName").val().length > 0) {
                 button.disabled = false;
             }else {
                 button.disabled = true;
@@ -613,6 +726,7 @@ $(document).ready(function() {
         dialogClass: "no-title"
     });
 
+    $("#addCourseButton").button();
     $("#pickWorkspaceDialog").dialog({
         autoOpen: true,
         buttons: {

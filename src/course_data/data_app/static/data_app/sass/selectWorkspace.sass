@@ -1,3 +1,18 @@
+// General Dialog Stuff
+.no-close .ui-dialog-titlebar-close
+    display: none
+
+.no-title .ui-dialog-titlebar
+    display: none
+
+.centerText
+    text-align: center
+
+
+// Pick Workspace Dialog
+#pickWorkspaceDiv
+    max-height: 500px
+
 .displayList, .displayListLi
     list-style-type: none
 
@@ -8,18 +23,55 @@
     margin-bottom: 15px
     margin-left: 0
 
-.no-close .ui-dialog-titlebar-close
-    display: none
+#addCourseButton
+    margin-left: 20px
 
-.no-title .ui-dialog-titlebar
-    display: none
+#addCourseButton .ui-button-text
+    line-height: 0.85em
+    vertical-align: middle
 
-.centerText
-    text-align: center
+#addCourseButton span
+    vertical-align: middle
+    font-size: 0.85em
 
+#addCourseButton img
+    vertical-align: middle
+    margin-right: 4px
+
+
+// Loading Dialog
 #loadingDialog
     text-align: center
     line-height: 150px
 
 #loadingDialog span
     margin-left: 10px
+
+
+// Add Workspace Dialog
+#newWorkspaceDialog .workspaceOptionBlock
+    margin: 20px 10px
+
+#newWorkspaceDialog .workspaceBorder
+    padding-bottom: 20px
+    border-bottom: 1px solid #DDD
+
+#sectionInputDiv label
+    margin-right: 10px
+
+#sectionInputDiv span
+    padding-left: 5px
+
+.workspaceOption
+    margin: 5px 0 5px 40px
+
+
+// Section Selection Dialog
+#sectionSelectionDiv
+    max-height: 500px
+
+#sectionSelectionDiv ul
+    list-style-type: none
+
+#sectionSelectionDiv li
+    list-style-type: none

@@ -87,29 +87,51 @@
         </div>
 
         <div id="pickWorkspaceDialog">
-            Please select a workspace:
-            <ul class="courseList">
-                {% for workspace in workspaces %}
-                    <li class="courseListLi">
-                        {{ workspace.name }} <a href="javascript:void(0)" height="16" width="16" onclick="addNewDisplay('{{workspace.id}}'); return false;"><img src="/static/data_app/images/add.png" alt="Add New" /></a>
-                        <ul class="displayList">
-                            {% for display in workspace.displays %}
-                                <li class="displayListLi">
-                                    <input class="workspaceRadio" type="radio" name="display" value="{{workspace.id}}--{{ forloop.counter0 }}">{{ display.name }}</input>
+            <div id="pickWorkspaceDiv">
+                Please select a workspace:
+                <ul class="courseList">
+                    {% for workspace in workspaces %}
+                        <li class="courseListLi">
+                            {{ workspace.name }} <a href="javascript:void(0)" height="16" width="16" onclick="addNewDisplay('{{workspace.id}}'); return false;"><img src="/static/data_app/images/add.png" alt="Add New" /></a>
+                            <ul class="displayList">
+                                {% for display in workspace.displays %}
+                                    <li class="displayListLi">
+                                        <input class="workspaceRadio" type="radio" name="display" value="{{workspace.id}}--{{ forloop.counter0 }}">{{ display.name }}</input>
 
-                                    <a href="javascript:void(0)" height="16" width="16" onclick="removeDisplay('{{workspace.id}}', {{ forloop.counter0 }}, '{{display.name}}'); return false;"><img src="/static/data_app/images/delete.png" alt="Add New" /></a>
+                                        <a href="javascript:void(0)" height="16" width="16" onclick="removeDisplay('{{workspace.id}}', {{ forloop.counter0 }}, '{{display.name}}'); return false;"><img src="/static/data_app/images/delete.png" alt="Add New" /></a>
 
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                {% endfor %}
-            </ul>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <button id="addCourseButton" onclick="addNewWorkspace()"><img src="/static/data_app/images/add.png" alt="Add New Course" /><span>Add a Course</span></button>
+            </div>
         </div>
 
         <div id="newDisplayDialog" style="display:none">
             Please Enter a Name for this Display: <input type="text" id="newDisplayName" />
         </div>
+
+        <div id="newWorkspaceDialog" style="display:none">
+            <div id="workspaceNameDiv" class="workspaceOptionBlock workspaceBorder">
+                <label>Workspace Name:</label>
+                <input id="workspaceNameInput" type="text" size="38" />
+            </div>
+            <div id="sectionInputDiv" class="workspaceOptionBlock">
+                <label>Section:</label>
+                <input class="sectionInput" type="text" size="4" /><span>:</span>
+                <input class="sectionInput" type="text" size="1" /><span>:</span>
+                <input class="sectionInput" type="text" size="2" /><span>:</span>
+                <input class="sectionInput" type="text" size="3" /><span>:</span>
+                <input class="sectionInput" type="text" size="3" /><span>:</span>
+                <input class="sectionInput" type="text" size="2" /><span>:</span>
+            </div>
+        </div>
+
+        <div id="sectionSelectionDialog" style="display:none"></div>
 
         <div id="loadingDialog">
              <img src="/static/data_app/images/loading.gif" height="36" width="36" style="vertical-align:middle" />
