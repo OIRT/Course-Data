@@ -801,7 +801,7 @@ $(document).ready(function() {
                         return;
                     }
 
-                    var data = {"subject": $("#subject").val(), "body": $("#body").val(), "wid": "500d6b12b1bf6a0381000000"};
+                    var data = {"subject": $("#subject").val(), "body": $("#body").val(), "wid": CourseData.workspace.id};
 
                     data.users = [];
                     var settings = CourseData.masterDataTable.fnSettings();

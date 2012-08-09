@@ -195,7 +195,7 @@ def send_emails(request):
         result = "error"
         error = ex
 
-    return HttpResponse(simplejson.dumps({"result": result, "error": error}), mimetype="application/json")
+    return HttpResponse(simplejson.dumps({"result": result, "error": str(error)}), mimetype="application/json")
 
 def workspace_table_data(wid):
     """
