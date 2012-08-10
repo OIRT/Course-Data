@@ -16,12 +16,19 @@
 .displayList, .displayListLi
     list-style-type: none
 
-.courseList,
+.courseList
     padding-left: 40px
 
 .courseListLi
     margin-bottom: 15px
     margin-left: 0
+
+// There's some silly thing in IE where it puts borders around linked images
+.courseList a
+    border: none
+
+.courseList a img
+    border: none
 
 #addCourseButton
     margin-left: 20px
