@@ -530,6 +530,32 @@ function removeDisplay(workspaceId, dIndex, name) {
     });
 }
 
+function removeWorkspace(workspaceId, name) {
+    $("#deleteText").html("Are you sure you want to delete <b>\"" + name + "\"</b>?");
+
+    $("#confirmDeleteDialog").dialog({
+        autoOpen: true,
+        modal: true,
+        draggable: false,
+        resizable: false,
+        closeOnEscape: false,
+        title: "Are you sure?",
+        buttons: {
+            "Cancel": function() {
+                $(this).dialog("close");
+            },
+            "Delete!": {
+                text: "Delete!",
+                click: function() {
+                    $.post("/data/workspace/delete/", {"workspaceId": workspaceId});
+                    $("#ws-" + workspaceId).remove();
+                    $(this).dialog('close');
+                }
+            }
+        }
+    });
+}
+
 function promptSectionSelection(sectionList) {
     $("#sectionSelectionDialog").html(can.view('static/data_app/views/sectionSelection.ejs', {
         sectionList: sectionList

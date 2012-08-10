@@ -159,6 +159,17 @@ def workspace(request, wid):
 
 
 @require_POST
+def delete_workspace(request):
+    workspaceId = request.POST["workspaceId"]
+    workspace = Workspace.objects(id=workspaceId)
+    if workspace is not None:
+        workspace.delete()
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=404)
+
+
+@require_POST
 def fetch_gradebooks_for_sections(request):
     gradebooks = Gradebook.objects(sections__in=[request.POST['sections[]']])
     return HttpResponse(documents_to_json(gradebooks), mimetype="application/json")
@@ -193,7 +204,7 @@ def send_emails(request):
         error = "<strong>No E-Mails Sent:</strong> The template below is invalid."
     except Exception as ex:
         result = "error"
-        error = ex
+        error = "Unknown Error: " + str(ex)
 
     return HttpResponse(simplejson.dumps({"result": result, "error": str(error)}), mimetype="application/json")
 
