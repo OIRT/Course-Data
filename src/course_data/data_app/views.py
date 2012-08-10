@@ -65,7 +65,7 @@ def student_id_type(id):
             netid (doesn't start with a digit)
         Return: "ruid" | "netid" | "email"
     '''
-    
+
     if re.match(r'^[\d]+$', id):
        return "ruid"
     else:
@@ -103,7 +103,7 @@ def id_to_rcpid(id,students):
     else:
         rcpid = None
     return rcpid
-    
+
 
 def merge_uploads_for_students(students, uploads):
     data = {}   # Stuff to return
@@ -338,10 +338,7 @@ def table(request, wid):
     return HttpResponse(jsonstr, mimetype="application/json")
 
 @require_POST
-#@csrf_exempt
 def upload(request, wid):
-    ws = get_document_or_404(Workspace, id=wid)
-
     if 'shortname' in request.POST and request.POST['shortname'] != '':
         doc = UserSubmittedData(shortname=request.POST['shortname'])
     else:
@@ -349,8 +346,8 @@ def upload(request, wid):
     if 'longname' in request.POST:
         doc.longname = request.POST['longname']
 
-    file = request.FILES['file']
-    data = [row for row in csv.reader(file)]
+    file = request.FILES['fileUpload']
+    data = [row for row in csv.reader(file.read().splitlines())]
     userdata = {}
     headers = data.pop(0)
     doc.headers = headers
@@ -362,4 +359,4 @@ def upload(request, wid):
 
     doc.workspaces.append(wid)
     doc.save()
-    return HttpResponseRedirect("/userLookup")
+    return HttpResponseRedirect("/userLookup?wid=" + wid + "&display=0")

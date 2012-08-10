@@ -681,6 +681,7 @@ function addNewDisplay(workspaceId) {
                     CourseData.displayName = $("#newDisplayName").val();
                     closedByUser = false;
                     $(this).dialog("close");
+                    $("#loadingText").text("Loading Student Data ...");
                     $("#loadingDialog").dialog("open");
                     fetchTable();
 
@@ -740,6 +741,20 @@ function appendNewDisplayToWorkspace() {
     CourseData.dIndex = CourseData.workspace.displays.length - 1;
 }
 
+function selectWorkspace() {
+    var wid = get_param("wid");
+    var display = get_param("display");
+    if(wid !== undefined && display !== undefined) {
+        $("#loadingText").text("Updating Student Data ...");
+        $("#loadingDialog").dialog("open");
+        CourseData.workspaceId = wid;
+        CourseData.dIndex = display;
+        fetchTable();
+    }else {
+        $("#pickWorkspaceDialog").dialog("open");
+    }
+}
+
 $(document).ready(function() {
     $("#loadingDialog").dialog({
         autoOpen: false,
@@ -754,7 +769,7 @@ $(document).ready(function() {
 
     $("#addCourseButton").button();
     $("#pickWorkspaceDialog").dialog({
-        autoOpen: true,
+        autoOpen: false,
         buttons: {
             "Select!": {
                 text: "Select!",
@@ -764,7 +779,10 @@ $(document).ready(function() {
                     CourseData.workspaceId = workspaceInfoSplit[0];
                     CourseData.dIndex = parseInt(workspaceInfoSplit[1], 10);
                     $(this).dialog("close");
+
+                    $("#loadingText").text("Loading Student Data ...");
                     $("#loadingDialog").dialog("open");
+
                     fetchTable();
                 }
             }
@@ -779,7 +797,7 @@ $(document).ready(function() {
     });
 
     markItUpSettings = {
-        onTab:          {keepDefault:false, replaceWith:'    '},
+        onTab: {keepDefault:false, replaceWith:'    '},
         markupSet:  [
             {name:'Bold', key:'B', openWith:'(!(<strong>|!|<b>)!)', closeWith:'(!(</strong>|!|</b>)!)' },
             {name:'Italic', key:'I', openWith:'(!(<em>|!|<i>)!)', closeWith:'(!(</em>|!|</i>)!)'  },
@@ -903,8 +921,13 @@ $(document).ready(function() {
                 text: "Upload!",
                 click: function() {
                     $("#uploadForm").attr("action", "/data/upload/" + CourseData.workspace.id + "/");
-                    $("#uploadForm").submit();
+
                     $(this).dialog("close");
+                    $("#mainDisplayDiv").hide();
+                    $("#loadingText").text("Uploading File ...");
+                    $("#loadingDialog").dialog("open");
+
+                    $("#uploadForm").submit();
                 }
             }
         }
@@ -920,6 +943,8 @@ $(document).ready(function() {
             window.location.reload(true);
         });
     });
+
+    selectWorkspace();
 });
 
 // Adds a function to DataTables that recalculates the filters while
@@ -983,3 +1008,16 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         return ((a < b) ? 1 : ((a > b) ? -1 : 0));
     }
 } );
+
+function get_param(q) {
+    var s = window.location.search;
+    var re = new RegExp(q + '=\\w+','i');
+    s = s.match(re);
+    if(s === null) {
+        return undefined;
+    }else if(typeof s[0] === 'undefined') {
+        return '';
+    }else {
+        return decodeURIComponent(s[0]).substring(q.length + 1);
+    }
+}
