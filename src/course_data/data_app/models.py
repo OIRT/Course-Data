@@ -119,3 +119,6 @@ class UserSubmittedData(Document):
     def __unicode__(self):
         return "<%s>" % self.shortname
         
+    def full_headers(self):
+        return [self.shortname+'.'+h for h in self.headers]
+        

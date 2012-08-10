@@ -4,6 +4,7 @@ from django.template.context import RequestContext
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.utils import simplejson
 from django.template import Template, Context
 from mongohelpers import get_document_or_404, documents_to_json, json_to_document
@@ -12,7 +13,7 @@ from mongoengine.queryset import Q
 from itertools import chain
 import json
 import csv
-
+import re
 
 #####
 # Utility functions
@@ -45,7 +46,7 @@ def merge_gradebooks_for_students(students,gradebooks):
     # and default values of '' for each assignment
     data = dict((h,'') for h in gradebook_headers)
     studentdata = dict((s.rcpid, data.copy()) for s in students)
-    #assert False, [len(v.keys()) for k,v in studentdata.iteritems()]
+
     for gb in gradebooks:
         gbdict = gb.as_dict()
         for s in studentdata:
@@ -53,6 +54,74 @@ def merge_gradebooks_for_students(students,gradebooks):
                 studentdata[s].update(gbdict[s])
     return studentdata
 
+def student_id_type(id):
+    '''Figure out student identifier type
+        id could be:
+            ruid (only digits)
+            email (use django's validate_email)
+            netid (doesn't start with a digit)
+        Return: "ruid" | "netid" | "email"
+    '''
+    
+    if re.match(r'^[\d]+$', id):
+       return "ruid"
+    else:
+        try:
+            validate_email(id)
+            return "email"
+        except:
+            return "netid"
+
+
+
+def id_to_rcpid(id,students):
+    ''' Given an id of unspecified type and a queryset of students
+        find the rcp of the student represented by id, if they're in the list
+        Return: rcpid or None
+    '''
+    # This clone is because I was getting a strange error when using this in the upload
+    # view "duplicate query conditions"
+    students = students.clone()
+    type = student_id_type(id)
+    # Check if the student is in our list
+    if type == "netid":
+        student = students.filter(netid=id).first()
+    elif type == "ruid":
+        student = students.filter(ruid=id).first()
+    else:
+        student = students.filter(email=id).first()
+
+    if student:
+        if 'rcpid' in student:
+            rcpid = student.rcpid
+        else:
+            # For guest users from sakai?
+            rcpid = student.email
+    else:
+        rcpid = None
+    return rcpid
+    
+
+def merge_uploads_for_students(students, uploads):
+    data = {}   # Stuff to return
+    headers = list(chain.from_iterable([u.full_headers() for u in uploads]))
+
+    data['_headers'] = headers
+    for student in students:
+        if 'rcpid' in student:
+            rcpid = student.rcpid
+        else:
+            rcpid = student.email
+        data[rcpid] = []
+        for upload in uploads:
+            h = upload.headers
+            filler = [''] * len(h)
+            if str(rcpid) in upload.userdata.keys():
+                data[rcpid].extend(upload.userdata[str(rcpid)])
+            else:
+                data[rcpid].extend(filler)
+
+    return data
 
 #####
 # Views
@@ -170,31 +239,48 @@ def workspace_table_data(wid):
     ws = get_document_or_404(Workspace, id=wid)
     students = all_workspace_students(ws)
     gradebooks = Gradebook.objects(id__in=ws.gradebooks)
+    uploads = UserSubmittedData.objects(workspaces__contains=wid)
+
     rcpids = []
     studentdata = {}
     gradebookdata = {}
+    uploaddata = {}
+    doGrades = (len(gradebooks) > 0)
+    doUploads = (len(uploads) > 0)
+
     userheaders = TABLE_STUDENT_INCLUDE
     studentdata = student_data_table(students)
-    gradebookdata = merge_gradebooks_for_students(students,gradebooks)
+    if doGrades:
+        gradebookdata = merge_gradebooks_for_students(students,gradebooks)
+    if doUploads:
+        uploaddata = merge_uploads_for_students(students,uploads)
 
     # Combine all the data into a table format
     headers = ['rcpid']
     headers.extend(userheaders)
-    gradeheaders = gradebookdata.itervalues().next().keys()
-    filler = [''] * len(gradeheaders)
-    headers.extend(gradeheaders)
+    if doGrades:
+        gradeheaders = gradebookdata.itervalues().next().keys()
+        filler = [''] * len(gradeheaders)
+        headers.extend(gradeheaders)
+    if doUploads:
+        headers.extend(uploaddata['_headers'])
 
     tabledata = []
     tabledata.append(headers)
-#    for person,grades in gradebookdata.iteritems():
+
     for s in students:
         person = s.rcpid
         row = [person]
         row.extend(studentdata[person])
-        if person in gradebookdata.iterkeys():
-            row.extend(gradebookdata[person].values())
-        else:
-            row.extend(filler)
+        if doGrades:
+            if person in gradebookdata.iterkeys():
+                row.extend(gradebookdata[person].values())
+            else:
+                row.extend(filler)
+        if doUploads:
+            if person in uploaddata.iterkeys():
+                row.extend(uploaddata[person])
+
         tabledata.append(row)
 
     return tabledata
@@ -205,8 +291,10 @@ def table(request, wid):
     return HttpResponse(jsonstr, mimetype="application/json")
 
 @require_POST
+#@csrf_exempt
 def upload(request, wid):
     ws = get_document_or_404(Workspace, id=wid)
+
     if 'shortname' in request.POST and request.POST['shortname'] != '':
         doc = UserSubmittedData(shortname=request.POST['shortname'])
     else:
@@ -216,7 +304,15 @@ def upload(request, wid):
     
     file = request.FILES['file']
     data = [row for row in csv.reader(file)]
-    doc.data = data
+    userdata = {}
+    headers = data.pop(0)
+    doc.headers = headers
+    allusers = User.objects.all()
+    for row in data:
+        id = row[0]
+        rcpid = id_to_rcpid(id,allusers)
+        doc.userdata[str(rcpid)] = row
+
     doc.workspaces.append(wid)
     doc.save()
     return HttpResponseRedirect("/userLookup")
