@@ -940,7 +940,7 @@ $(document).ready(function() {
     $("#switchWorkspaceButton").bind('click', function() {
         // Make sure we save the workspace, and then refresh the page.
         CourseData.workspace.save(function() {
-            window.location.reload(true);
+            window.location.replace(window.location.origin + window.location.pathname);
         });
     });
 
