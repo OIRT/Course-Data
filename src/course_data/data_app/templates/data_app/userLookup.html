@@ -24,6 +24,11 @@
 
     <body>
         <div id="mainDisplayDiv" style="display:none">
+            <div id="editButtonDiv">
+                <button type="button" id="uploadButton">Upload File</button>
+                <button type="button" id="switchWorkspaceButton">Switch Workspace</button>
+            </div>
+
             <div id="andVorDiv"></div>
 
             <div id="filterDivContainer"></div>
@@ -31,7 +36,6 @@
             <div id="buttonDiv" style="margin-top:30px">
                 <button type="button" onclick="CourseData.masterDataTable.fnStandingRedraw(); return false;">Recalculate Filters</button>
                 <button type="button" id="newFilter">Add New Filter</button>
-                <button type="button" id="uploadButton">Upload File</button>
             </div>
             <br />
             <hr />

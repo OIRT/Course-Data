@@ -913,6 +913,13 @@ $(document).ready(function() {
     $("#uploadButton").bind('click', function() {
         $("#uploadDiv").dialog('open');
     });
+
+    $("#switchWorkspaceButton").bind('click', function() {
+        // Make sure we save the workspace, and then refresh the page.
+        CourseData.workspace.save(function() {
+            window.location.reload(true);
+        });
+    });
 });
 
 // Adds a function to DataTables that recalculates the filters while
