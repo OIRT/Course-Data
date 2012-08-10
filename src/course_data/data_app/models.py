@@ -104,15 +104,20 @@ class Workspace(Document):
     def __unicode__(self):
         return "<%s>" % self.name
 
+# We assume the first column in an uploaded spreadsheet is a student id
 class UserSubmittedData(Document):
     id = ObjectIdField()
     shortname = StringField(required=True)
     longname = StringField()
     owners = ListField(StringField())
     workspaces = ListField(StringField())
-    data = ListField(ListField())
+    headers = ListField(StringField())
+    userdata = MapField(ListField())
 
     meta = {'allow_inheritance': False}
 
     def __unicode__(self):
         return "<%s>" % self.shortname
+
+    def full_headers(self):
+        return [self.shortname+'.'+h for h in self.headers]
