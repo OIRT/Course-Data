@@ -25,9 +25,17 @@ var CourseData = {
     postWorkspace: function() {
         CourseData.workspaceUpdateTime = new Date().getTime() + 4000;
         if(CourseData.workspaceUpdater === null) {
+            $("#dataSavedImage").hide("fade", function() {
+                $("#savingDataImage").show("fade");
+            });
+
             CourseData.workspaceUpdater = setInterval(function() {
                 if(CourseData.workspaceForcePush || new Date().getTime() > CourseData.workspaceUpdateTime) {
-                    CourseData.workspace.save();
+                    CourseData.workspace.save(function() {
+                        $("#savingDataImage").hide("fade", function() {
+                            $("#dataSavedImage").show("fade");
+                        });
+                    });
                     clearInterval(CourseData.workspaceUpdater);
                     CourseData.workspaceUpdater = null;
                     CourseData.workspaceForcePush = false;
