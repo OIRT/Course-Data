@@ -392,6 +392,9 @@ function tableInitialized() {
             appendNewDisplayToWorkspace();
         }
 
+        $("#titleHeader").text(CourseData.workspace.name + ": " +
+                CourseData.workspace.displays[CourseData.dIndex].name);
+
         CourseData.workspace["id"] = CourseData.workspace["_id"]["$oid"];
         if(!CourseData.workspace.displays[CourseData.dIndex].filters) {
             CourseData.workspace.displays[CourseData.dIndex].filters = [];
