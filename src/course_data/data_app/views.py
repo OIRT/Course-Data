@@ -265,7 +265,7 @@ def send_emails(request):
         dataDict = dict((d[0], d) for d in data[1:])
 
         for user in users:
-            contextDict = dict((head.replace(" ", "_"), value) for (head, value) in zip(dataHeaders, dataDict[int(user)]))
+            contextDict = dict((re.sub("[^A-Za-z0-9_]", "", head), value) for (head, value) in zip(dataHeaders, dataDict[int(user)]))
             context = Context(contextDict)
             send_mail(request.POST["subject"], template.render(context), "someone@else.com", [contextDict["email"]], fail_silently=False)
 
@@ -279,6 +279,7 @@ def send_emails(request):
         error = "Unknown Error: " + str(ex)
 
     return HttpResponse(simplejson.dumps({"result": result, "error": str(error)}), mimetype="application/json")
+
 
 def workspace_table_data(wid):
     """

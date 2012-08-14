@@ -851,7 +851,7 @@ $(document).ready(function() {
             {
                 name:"Insert Variable",
                 replaceWith: function(markItUp) {
-                    return "{{" + $(".markItUpUfd input").val().replace(/ /g, "_") + "}}";
+                    return "{{" + $(".markItUpUfd input").val().replace(/[^A-Za-z0-9_]/g, "") + "}}";
                 }
             },
             {
