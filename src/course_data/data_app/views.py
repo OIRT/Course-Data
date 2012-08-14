@@ -12,7 +12,7 @@ from data_app.models import *
 from mongoengine.queryset import Q
 from itertools import chain
 from operator import attrgetter
-from django.core.servers.basehttp import FileWrapper
+from collections import OrderedDict
 import cStringIO as StringIO
 import json
 import csv
@@ -45,12 +45,12 @@ def student_data_table(students):
 def merge_gradebooks_for_students(students,gradebooks):
     # Unique list of all gradebook headers
     all_gradebook_items = list(chain.from_iterable([gb.items for gb in gradebooks]))
-    gradebook_headers = set([i.name for i in all_gradebook_items])
+    gradebook_headers = list([i.name for i in all_gradebook_items])
 
     # Initialize a dict containing all students each with all gradebook headers,
     # and default values of '' for each assignment
-    data = dict((h,'') for h in gradebook_headers)
-    studentdata = dict((s.rcpid, data.copy()) for s in students)
+    data = OrderedDict((h, '') for h in gradebook_headers)
+    studentdata = OrderedDict((s.rcpid, data.copy()) for s in students)
 
     for gb in gradebooks:
         gbdict = gb.as_dict()
@@ -58,6 +58,7 @@ def merge_gradebooks_for_students(students,gradebooks):
             if s in gbdict:
                 studentdata[s].update(gbdict[s])
     return studentdata
+
 
 def student_id_type(id):
     '''Figure out student identifier type
@@ -291,7 +292,6 @@ def workspace_table_data(wid):
     gradebooks = Gradebook.objects(id__in=ws.gradebooks)
     uploads = UserSubmittedData.objects(workspaces__contains=wid)
 
-    rcpids = []
     studentdata = {}
     gradebookdata = {}
     uploaddata = {}
@@ -301,9 +301,9 @@ def workspace_table_data(wid):
     userheaders = TABLE_STUDENT_INCLUDE
     studentdata = student_data_table(students)
     if doGrades:
-        gradebookdata = merge_gradebooks_for_students(students,gradebooks)
+        gradebookdata = merge_gradebooks_for_students(students, gradebooks)
     if doUploads:
-        uploaddata = merge_uploads_for_students(students,uploads)
+        uploaddata = merge_uploads_for_students(students, uploads)
 
     # Combine all the data into a table format
     headers = ['rcpid']
@@ -335,14 +335,17 @@ def workspace_table_data(wid):
 
     return tabledata
 
+
 def table(request, wid):
     data = workspace_table_data(wid)
     jsonstr = json.dumps(data)
     return HttpResponse(jsonstr, mimetype="application/json")
 
+
 def fetch_upload_list(request, wid):
     uploads = UserSubmittedData.objects(workspaces=wid)
     return HttpResponse(documents_to_json(uploads), mimetype="application/json")
+
 
 @require_POST
 def remove_upload(request):
@@ -354,6 +357,7 @@ def remove_upload(request):
     upload.save()
 
     return HttpResponse(status=200)
+
 
 @require_POST
 def upload(request, wid, display):

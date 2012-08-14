@@ -361,7 +361,7 @@ function tableInitialized() {
     VisControl = can.Control({
         init: function() {
             this.element.html(can.view('static/data_app/views/visDialog.ejs', {
-                columns: CourseData.alphabetizedColumns
+                columns: CourseData.masterDataTable.fnSettings().aoColumns
             }));
 
             $("#visDialog").dialog({
@@ -416,22 +416,6 @@ function tableInitialized() {
             CourseData.workspace.displays[CourseData.dIndex].columns = [];
         }
         var columns = new can.Observe.List(CourseData.workspace.displays[CourseData.dIndex].columns);
-
-        // Alphabetize the Columns
-        // .slice(0) makes sure to clone the array so that we're not modifying the
-        // internal DataTables column array when we sort
-        var alphabetizedColumns = CourseData.masterDataTable.fnSettings().aoColumns.slice(0);
-        alphabetizedColumns.sort(function(a,b) {
-            if(a.sTitle.toLowerCase() > b.sTitle.toLowerCase()) {
-                return 1;
-            }else if(a.sTitle.toLowerCase() < b.sTitle.toLowerCase()) {
-                return -1;
-            }else {
-                return 0;
-            }
-        });
-
-        CourseData.alphabetizedColumns = alphabetizedColumns;
 
         new ColumnsControl('#userTable', {
             columns: columns
