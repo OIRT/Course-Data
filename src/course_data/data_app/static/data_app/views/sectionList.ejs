@@ -1,0 +1,16 @@
+<h3>Sections</h3>
+
+<ul>
+    <% var section = 0;
+    for(section = 0; section < sections.length; section++) { %>
+        <li>
+            <input type="checkbox" class="sectionListCheckbox" id=<%= "\"sec-" + sections[section] + "\"" %> checked="checked" />
+            <label for=<%= "\"sec-" + sections[section] + "\"" %>><%= sections[section] %></label>
+        </li>
+    <% } %>
+
+    <li>
+        <input type="text" id="newSectionNumber" size="30" />
+        <button id="addSectionButton">Add</button>
+    </li>
+</ul>

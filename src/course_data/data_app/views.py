@@ -132,7 +132,7 @@ def merge_uploads_for_students(students, uploads):
 
 
 def index(request):
-    return render_to_response('data_app/index.html', {}, context_instance=RequestContext(request))
+    return HttpResponseRedirect("/userLookup")
 
 
 def users(request):
@@ -336,6 +336,21 @@ def table(request, wid):
     data = workspace_table_data(wid)
     jsonstr = json.dumps(data)
     return HttpResponse(jsonstr, mimetype="application/json")
+
+def fetch_upload_list(request, wid):
+    uploads = UserSubmittedData.objects(workspaces=wid)
+    return HttpResponse(documents_to_json(uploads), mimetype="application/json")
+
+@require_POST
+def remove_upload(request):
+    wid = request.POST["workspace"]
+    uploadId = request.POST["upload"]
+
+    upload = UserSubmittedData.objects(id=uploadId).first()
+    upload.workspaces.remove(wid)
+    upload.save()
+
+    return HttpResponse(status=200)
 
 @require_POST
 def upload(request, wid):

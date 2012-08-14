@@ -1,0 +1,15 @@
+<h3>Uploaded Files</h3>
+
+<% if(files.length > 0) { %>
+    <ul>
+        <% var file = 0;
+        for(file = 0; file < files.length; file++) { %>
+            <li>
+                <input type="checkbox" class="uploadsListCheckbox" id=<%= "upl-" + files[file].id %> checked="checked" />
+                <label for=<%= "upl-" + files[file].id %>><%= files[file].longname %></label>
+            </li>
+        <% } %>
+    </ul>
+<% }else { %>
+    <div id="noUploadedFiles">No files have been uploaded.</div>
+<% } %>

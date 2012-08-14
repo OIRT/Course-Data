@@ -19,6 +19,8 @@ var CourseData = {
     newWorkspace: null,
     newWorkspaceId: null,
 
+    uploadList: null,
+
     // Sets up a function that will push the current workspace up to the
     // server.  However, to avoid multiple requests in a brief period,
     // it waits until everything has settled for several seconds.
@@ -268,6 +270,11 @@ function tableInitialized() {
             // order on the left, and the invisible columns on the right.
             for(i = 0; i < columns.length; i++) {
                 var from = CourseData.indexNums[columns[i]];
+                if(from === undefined) {
+                    columns.splice(i, 1);
+                    i--;
+                    continue;
+                }
                 var to = i;
                 toTitle = oSettings.aoColumns[to].sTitle;
 
@@ -392,8 +399,7 @@ function tableInitialized() {
             appendNewDisplayToWorkspace();
         }
 
-        $("#titleHeader").text(CourseData.workspace.name + ": " +
-                CourseData.workspace.displays[CourseData.dIndex].name);
+        $("#titleHeader").html(can.view('static/data_app/views/header.ejs'));
 
         CourseData.workspace["id"] = CourseData.workspace["_id"]["$oid"];
         if(!CourseData.workspace.displays[CourseData.dIndex].filters) {
@@ -468,6 +474,13 @@ function tableInitialized() {
         $("#mainDisplayDiv").show();
         CourseData.masterDataTable.fnAdjustColumnSizing();
         CourseData.masterDataTable.fnDraw();
+
+        $.get("/data/upload/list/" + CourseData.workspace.id, function(data) {
+            for(var upload in data) {
+                data[upload].id = data[upload]["_id"]["$oid"];
+            }
+            CourseData.uploadList = data;
+        });
     });
 }
 
@@ -766,6 +779,29 @@ function selectWorkspace() {
     }
 }
 
+function setupSectionsList() {
+    var sections = CourseData.workspace.rosters;
+    $("#sectionList").html(can.view('static/data_app/views/sectionList.ejs', {
+        sections: sections
+    }));
+
+    $("#addSectionButton").bind('click', function() {
+        CourseData.workspace.rosters.push($("#newSectionNumber").val());
+        setupSectionsList();
+    });
+}
+
+function setupEditWorkspace() {
+    $("#editWorkspaceName").val(CourseData.workspace.name);
+    $("#editDisplayName").val(CourseData.workspace.displays[CourseData.dIndex].name);
+
+    $("#uploadedFilesList").html(can.view('static/data_app/views/uploadedFiles.ejs', {
+        files: CourseData.uploadList
+    }));
+
+    setupSectionsList();
+}
+
 $(document).ready(function() {
     $("#loadingDialog").dialog({
         autoOpen: false,
@@ -944,8 +980,49 @@ $(document).ready(function() {
         }
     });
 
+    $("#editWorkspaceDialog").dialog({
+        autoOpen: false,
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 700,
+        title: "Edit Workspace",
+        show: { effect: "fade", speed: 1000 },
+        hide: { effect: "fade", speed: 1000 },
+        buttons: {
+            "Cancel": function() {
+                $(this).dialog("close");
+            },
+            "Update!": {
+                text: "Update!",
+                click: function() {
+                    CourseData.workspace.attr("name", $("#editWorkspaceName").val());
+                    CourseData.workspace.displays[CourseData.dIndex].attr("name", $("#editDisplayName").val());
+
+                    $(".sectionListCheckbox:not(:checked)").each(function(index, el) {
+                        var sectionId = $(el).attr("id").substring(4);
+                        var sectionIndex = CourseData.workspace.rosters.indexOf(sectionId);
+                        CourseData.workspace.rosters.splice(sectionIndex, 1);
+                    });
+
+                    $(".uploadsListCheckbox:not(:checked)").each(function(index, el) {
+                        var uploadId = $(el).attr("id").substring(4);
+                        $.post("/data/upload/remove/", {workspace: CourseData.workspace.id, upload: uploadId});
+                    });
+
+                    $(this).dialog("close");
+                }
+            }
+        }
+    });
+
     $("#uploadButton").bind('click', function() {
         $("#uploadDiv").dialog('open');
+    });
+
+    $("#editWorkspaceButton").bind('click', function() {
+        setupEditWorkspace();
+        $("#editWorkspaceDialog").dialog('open');
     });
 
     $("#switchWorkspaceButton").bind('click', function() {
