@@ -711,7 +711,6 @@ function addNewDisplay(workspaceId) {
 
                     // Make sure the new display gets saved to the server.
                     CourseData.workspaceForcePush = true;
-                    CourseData.postWorkspace();
                 }
             }
         },
@@ -745,7 +744,7 @@ function appendNewDisplayToWorkspace() {
         "andVor" : "and",
         "sorting" : {
             "column" : "lastname",
-            "direction" : "desc"
+            "direction" : "asc"
         },
         "columns" : [
             "lastname",
@@ -1023,6 +1022,14 @@ $(document).ready(function() {
     $("#editWorkspaceButton").bind('click', function() {
         setupEditWorkspace();
         $("#editWorkspaceDialog").dialog('open');
+    });
+
+    // This puts an invisible iframe on the page, which will handle the download
+    $("#exportButton").bind('click', function() {
+        var iframe = document.createElement("iframe");
+        iframe.src = "/data/export/" + CourseData.workspace.id + "/";
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
     });
 
     $("#switchWorkspaceButton").bind('click', function() {

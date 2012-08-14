@@ -12,6 +12,8 @@ from data_app.models import *
 from mongoengine.queryset import Q
 from itertools import chain
 from operator import attrgetter
+from django.core.servers.basehttp import FileWrapper
+import cStringIO as StringIO
 import json
 import csv
 import re
@@ -375,3 +377,20 @@ def upload(request, wid, display):
     doc.workspaces.append(wid)
     doc.save()
     return HttpResponseRedirect("/userLookup?wid=" + wid + "&display=" + display)
+
+
+def export(request, wid):
+    data = workspace_table_data(wid)
+    buffer = StringIO.StringIO()
+    for row in data:
+        for cell in row:
+            buffer.write(str(cell) + ",")
+        buffer.write("\n")
+
+    ws = Workspace.objects(id=wid).first()
+    filename = ws.name.replace(" ", "_") + ".csv"
+
+    response = HttpResponse(buffer.getvalue(), content_type="text/csv")
+    response["Content-Disposition"] = 'attachment;filename=' + filename
+    response["Content-Length"] = buffer.tell()
+    return response
