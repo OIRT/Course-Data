@@ -967,7 +967,7 @@ $(document).ready(function() {
             "Upload!": {
                 text: "Upload!",
                 click: function() {
-                    $("#uploadForm").attr("action", "/data/upload/" + CourseData.workspace.id + "/");
+                    $("#uploadForm").attr("action", "/data/upload/" + CourseData.workspace.id + "/" + CourseData.dIndex + "/");
 
                     $(this).dialog("close");
                     $("#mainDisplayDiv").hide();

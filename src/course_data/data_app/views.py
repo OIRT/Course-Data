@@ -353,7 +353,7 @@ def remove_upload(request):
     return HttpResponse(status=200)
 
 @require_POST
-def upload(request, wid):
+def upload(request, wid, display):
     if 'shortname' in request.POST and request.POST['shortname'] != '':
         doc = UserSubmittedData(shortname=request.POST['shortname'])
     else:
@@ -374,4 +374,4 @@ def upload(request, wid):
 
     doc.workspaces.append(wid)
     doc.save()
-    return HttpResponseRedirect("/userLookup?wid=" + wid + "&display=0")
+    return HttpResponseRedirect("/userLookup?wid=" + wid + "&display=" + display)

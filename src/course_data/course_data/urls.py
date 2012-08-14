@@ -22,7 +22,7 @@ urlpatterns = patterns('data_app.views',
     url(r'^data/workspace/delete/$', 'delete_workspace'),
     url(r'^data/email$', 'send_emails'),
     url(r'^data/table/(?P<wid>[0-9a-f]+)/$', 'table'),
-    url(r'^data/upload/(?P<wid>[0-9a-f]+)/$', 'upload'),
+    url(r'^data/upload/(?P<wid>[0-9a-f]+)/(?P<display>\d+)/$', 'upload'),
     url(r'^data/upload/list/(?P<wid>[0-9a-f]+)/$', 'fetch_upload_list'),
     url(r'^data/upload/remove/$', 'remove_upload')
 )
