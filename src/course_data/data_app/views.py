@@ -12,11 +12,17 @@ from data_app.models import *
 from mongoengine.queryset import Q
 from itertools import chain
 from operator import attrgetter
-from collections import OrderedDict
 import cStringIO as StringIO
 import json
 import csv
 import re
+
+# OrderedDict is included in 2.7, 2.6 (on the server) and earlier require
+# the addon module.  They work the same, though.
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 #####
 # Utility functions

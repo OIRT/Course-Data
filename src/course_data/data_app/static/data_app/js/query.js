@@ -459,7 +459,7 @@ function tableInitialized() {
         CourseData.masterDataTable.fnAdjustColumnSizing();
         CourseData.masterDataTable.fnDraw();
 
-        $.get("/data/upload/list/" + CourseData.workspace.id, function(data) {
+        $.get("/data/upload/list/" + CourseData.workspace.id + "/", function(data) {
             for(var upload in data) {
                 data[upload].id = data[upload]["_id"]["$oid"];
             }
