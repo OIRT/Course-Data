@@ -1,4 +1,9 @@
 <div id="sectionSelectionDiv">
+    <div>
+        <%== can.view.render('static/data_app/views/statusView.ejs', {
+            title: "sectionSelection"
+        }); %>
+    </div>
     Which sections would you like to include?
     <ul>
         <% for(var section in sectionList) { %>

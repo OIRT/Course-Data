@@ -274,7 +274,9 @@ def send_emails(request):
         for user in users:
             contextDict = dict((re.sub("[^A-Za-z0-9_]", "", head), value) for (head, value) in zip(dataHeaders, dataDict[int(user)]))
             context = Context(contextDict)
-            send_mail(request.POST["subject"], template.render(context), "someone@else.com", [contextDict["email"]], fail_silently=False)
+
+            if contextDict["email"] is not None and contextDict["email"] is not '':
+                send_mail(request.POST["subject"], template.render(context), "someone@else.com", [contextDict["email"]], fail_silently=False)
 
         result = "success"
         error = ""

@@ -64,6 +64,19 @@ var CourseData = {
     }, {})
 };
 
+function openStatus(element, text) {
+    $(element).text(text);
+    $(element).show("slideDown");
+}
+
+function closeStatus(element, immediately) {
+    if(immediately) {
+        $(element).hide();
+    }else {
+        $(element).hide("slideDown");
+    }
+}
+
 function compareValues(a, b, operator) {
     if( operator === "<" && parseFloat(a) < parseFloat(b) ||
         operator === ">" && parseFloat(a) > parseFloat(b) ||
@@ -594,6 +607,11 @@ function promptSectionSelection(sectionList) {
                         }
                     });
 
+                    if(finalSectionList.length === 0) {
+                        openStatus("#sectionSelectionError", "Please select at least one section!");
+                        return;
+                    }
+
                     CourseData.newWorkspace.rosters = finalSectionList;
 
                     var workspace = new CourseData.Workspace(CourseData.newWorkspace);
@@ -604,6 +622,9 @@ function promptSectionSelection(sectionList) {
                     });
                 }
             }
+        },
+        open: function() {
+            closeStatus("#sectionSelectionError", true);
         },
         dialogClass: "no-close"
     });
@@ -629,10 +650,23 @@ function addNewWorkspace() {
             "Create!": {
                 text: "Create!",
                 click: function() {
+                    if($("#workspaceNameInput").val() === "") {
+                        openStatus("#newWorkspaceError", "Invalid Workspace Name!");
+                        return;
+                    }
+
                     var sectionNumber = "";
+                    var validSection = true;
                     $(".sectionInput").each(function(i, el) {
+                        if($(el).val() === '' || /[^0-9A-Za-z]/.test($(el).val())) {
+                            openStatus("#newWorkspaceError", "Invalid Section Number!");
+                            validSection = false;
+                        }
+
                         sectionNumber += $(el).val() + ":";
                     });
+
+                    if(!validSection) return;
 
                     CourseData.newWorkspace = {};
                     CourseData.newWorkspace.name = $("#workspaceNameInput").val();
@@ -656,6 +690,9 @@ function addNewWorkspace() {
                     });
                 }
             }
+        },
+        open: function() {
+            closeStatus("#newWorkspaceError", true);
         },
         dialogClass: "no-close"
     });
@@ -805,6 +842,12 @@ $(document).ready(function() {
                 text: "Select!",
                 click: function() {
                     var workspaceInfo = $(".workspaceRadio:checked").val();
+
+                    if(workspaceInfo === undefined) {
+                        openStatus("#pickWorkspaceError", "Please Select a Workspace!");
+                        return;
+                    }
+
                     var workspaceInfoSplit = workspaceInfo.split("--");
                     CourseData.workspaceId = workspaceInfoSplit[0];
                     CourseData.dIndex = parseInt(workspaceInfoSplit[1], 10);
@@ -816,6 +859,9 @@ $(document).ready(function() {
                     fetchTable();
                 }
             }
+        },
+        open: function() {
+            closeStatus("#pickWorkspaceError", true);
         },
         modal: true,
         draggable: false,
@@ -861,17 +907,15 @@ $(document).ready(function() {
                 text: "Send!",
                 "class": 'sendButton',
                 click: function() {
-                    $("#emailSuccess").hide("slideDown");
-                    $("#emailError").hide("slideDown");
-                    $("#templateHelp").hide("slideDown");
+                    closeStatus("#emailSuccess");
+                    closeStatus("#emailError");
+                    closeStatus("#templateHelp");
 
                     if($("#subject").val() === "") {
-                        $("#emailError").html("<strong>No E-Mails Sent:</strong> Please Enter a Subject.");
-                        $("#emailError").show("slideDown");
+                        openStatus("#emailError", "<strong>No E-Mails Sent:</strong> Please Enter a Subject.");
                         return;
                     }else if($("#body").val() === "") {
-                        $("#emailError").html("<strong>No E-Mails Sent:</strong> Please Enter a Message Body.");
-                        $("#emailError").show("slideDown");
+                        openStatus("#emailError", "<strong>No E-Mails Sent:</strong> Please Enter a Message Body.");
                         return;
                     }
 
@@ -887,11 +931,11 @@ $(document).ready(function() {
                     }
 
                     if(data.users.length === 0) {
-                        $("#emailError").html("No Users Are Selected to Receive E-Mails.");
-                        $("#emailError").show("slideDown");
+                        openStatus("#emailError", "No Users Are Selected to Receive E-Mails.");
                         return;
                     }
 
+                    $("#emailPendingText").text("Sending ...");
                     $("#emailPending").show("slideDown");
 
                     $.ajax({
@@ -901,10 +945,9 @@ $(document).ready(function() {
                         success: function(data) {
                             $("#emailPending").hide("slideDown");
                             if(data.result === "success") {
-                                $("#emailSuccess").show("slideDown");
+                                openStatus("#emailSuccess", "E-Mails Sent Successfully!");
                             }else {
-                                $("#emailError").html(data.error);
-                                $("#emailError").show("slideDown");
+                                openStatus("#emailError", data.error);
                             }
                         }
                     });
@@ -950,6 +993,17 @@ $(document).ready(function() {
             "Upload!": {
                 text: "Upload!",
                 click: function() {
+                    if($("#uLongname").val() === "") {
+                        openStatus("#uploadError", "Please Enter a Long Name!");
+                        return;
+                    }else if($("#uShortname").val() === "") {
+                        openStatus("#uploadError", "Please Enter a Short Name!");
+                        return;
+                    }else if($("#fileUpload").val() === "") {
+                        openStatus("#uploadError", "Please Select a File!");
+                        return;
+                    }
+
                     $("#uploadForm").attr("action", "/data/upload/" + CourseData.workspace.id + "/" + CourseData.dIndex + "/");
 
                     $(this).dialog("close");
@@ -960,6 +1014,9 @@ $(document).ready(function() {
                     $("#uploadForm").submit();
                 }
             }
+        },
+        open: function() {
+            closeStatus("#uploadError", true);
         }
     });
 
@@ -1021,6 +1078,13 @@ $(document).ready(function() {
         CourseData.workspace.save(function() {
             window.location.replace(window.location.origin + window.location.pathname);
         });
+    });
+
+    $('div[id^="statusDiv"]').each(function(index, el) {
+        var title = $(el).attr("id").substring("statusDiv-".length);
+        $(el).html(can.view('static/data_app/views/statusView.ejs', {
+            title: title
+        }));
     });
 
     selectWorkspace();
