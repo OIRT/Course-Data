@@ -679,7 +679,7 @@ function addNewWorkspace() {
                         for(var gradebook in data) {
                             CourseData.newWorkspace.gradebooks.push(data[gradebook]["_id"]["$oid"]);
                             for(var section in data[gradebook].sections) {
-                                if(sectionList.indexOf(data[gradebook].sections[section]) == -1) {
+                                if($.inArray(data[gradebook].sections[section], sectionList) == -1) {
                                     sectionList.push(data[gradebook].sections[section]);
                                 }
                             }
@@ -1041,7 +1041,7 @@ $(document).ready(function() {
 
                     $(".sectionListCheckbox:not(:checked)").each(function(index, el) {
                         var sectionId = $(el).attr("id").substring(4);
-                        var sectionIndex = CourseData.workspace.rosters.indexOf(sectionId);
+                        var sectionIndex = $.inArray(sectionId, CourseData.workspace.rosters);
                         CourseData.workspace.rosters.splice(sectionIndex, 1);
                     });
 
@@ -1076,7 +1076,8 @@ $(document).ready(function() {
     $("#switchWorkspaceButton").bind('click', function() {
         // Make sure we save the workspace, and then refresh the page.
         CourseData.workspace.save(function() {
-            window.location.replace(window.location.origin + window.location.pathname);
+            window.location.replace(window.location.protocol + "//" + window.location.hostname +
+                (window.location.port? ":" + window.location.port : "") + window.location.pathname);
         });
     });
 
