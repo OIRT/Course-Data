@@ -263,7 +263,7 @@ def create_workspace(request):
         return HttpResponse(status=200)
 
 
-def send_emails(request):
+def send_emails(request, preview):
     try:
         template = Template(request.POST["body"])
         users = request.POST.getlist("users[]")
@@ -276,7 +276,11 @@ def send_emails(request):
             context = Context(contextDict)
 
             if contextDict["email"] is not None and contextDict["email"] is not '':
-                send_mail(request.POST["subject"], template.render(context), "someone@else.com", [contextDict["email"]], fail_silently=False)
+                if not preview:
+                    send_mail(request.POST["subject"], template.render(context), "someone@else.com", [contextDict["email"]], fail_silently=False)
+                else:
+                    name = contextDict["firstname"] + " " + contextDict["lastname"]
+                    return HttpResponse(simplejson.dumps({"result": "success", "name": name, "email": template.render(context)}), mimetype="application/json")
 
         result = "success"
         error = ""

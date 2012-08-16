@@ -721,6 +721,7 @@ function addNewDisplay(workspaceId) {
                 }
             },
             "Create!": {
+                id: "createDisplayButton",
                 text: "Create!",
                 click: function() {
                     CourseData.displayName = $("#newDisplayName").val();
@@ -740,24 +741,15 @@ function addNewDisplay(workspaceId) {
 
     var buttons = $('#newDisplayDialog').dialog('option', 'buttons');
 
-    $.each(buttons, function(buttonIndex, button) {
-        if(button.text === "Create!") {
-            button.disabled = true;
+    // Ensure the name has at least one character
+    $("#newDisplayName").bind("keyup", function() {
+        if($("#newDisplayName").val().length > 0) {
+            $("#createDisplayButton").button("enable");
+        }else {
+            $("#createDisplayButton").button("disable");
         }
     });
-    $("#newDisplayDialog").dialog("option", "buttons", buttons);
-
-    $("#newDisplayName").bind("keyup", function() {
-        $.each(buttons, function(buttonIndex, button) {
-            if(button.text !== "Create!" || $("#newDisplayName").val().length > 0) {
-                button.disabled = false;
-            }else {
-                button.disabled = true;
-            }
-        });
-
-        $("#newDisplayDialog").dialog("option", "buttons", buttons);
-    });
+    $("#newDisplayName").trigger("keyup");
 }
 
 function appendNewDisplayToWorkspace() {
@@ -903,19 +895,20 @@ $(document).ready(function() {
             "Cancel": function() {
                 $(this).dialog("close");
             },
-            "Send!": {
-                text: "Send!",
-                "class": 'sendButton',
+            "Preview": {
+                id: "previewEmailButton",
+                text: "Preview",
                 click: function() {
+                    $("#previewEmailButton").button("disable");
                     closeStatus("#emailSuccess");
                     closeStatus("#emailError");
                     closeStatus("#templateHelp");
 
                     if($("#subject").val() === "") {
-                        openStatus("#emailError", "<strong>No E-Mails Sent:</strong> Please Enter a Subject.");
+                        openStatus("#emailError", "Please Enter a Subject.");
                         return;
                     }else if($("#body").val() === "") {
-                        openStatus("#emailError", "<strong>No E-Mails Sent:</strong> Please Enter a Message Body.");
+                        openStatus("#emailError", "Please Enter a Message Body.");
                         return;
                     }
 
@@ -935,30 +928,102 @@ $(document).ready(function() {
                         return;
                     }
 
-                    $("#emailPendingText").text("Sending ...");
+                    $("#emailPendingText").text("Generating Preview ...");
                     $("#emailPending").show("slideDown");
 
                     $.ajax({
-                        url: "/data/email",
+                        url: "/data/email/preview/",
                         type: "POST",
                         data: data,
                         success: function(data) {
-                            $("#emailPending").hide("slideDown");
                             if(data.result === "success") {
-                                openStatus("#emailSuccess", "E-Mails Sent Successfully!");
+                                $("#emailPreviewName").text(data.name);
+                                $("#emailPreviewDiv").html(data.email.replace(/\n/g, '<br />'));
+                                $("#emailPending").hide();
+                                $("#emailDialog").dialog('close');
+                                $("#emailPreviewDialog").dialog('open');
                             }else {
+                                $("#emailPending").hide("slideDown");
                                 openStatus("#emailError", data.error);
+                                $("#previewEmailButton").button("enable");
                             }
                         }
                     });
                 }
             }
         },
+        open: function() {
+            closeStatus("#emailSuccess");
+            closeStatus("#emailError");
+            closeStatus("#templateHelp");
+            $("#previewEmailButton").button("enable");
+        },
         modal: true,
         draggable: false,
         resizable: false,
         minWidth: 700,
         title: "Send E-Mails",
+        show: { effect: "fade", speed: 1000 },
+        hide: { effect: "fade", speed: 1000 }
+    });
+
+    $("#emailPreviewDialog").dialog({
+        autoOpen: false,
+        buttons: {
+            "Cancel": function() {
+                $(this).dialog("close");
+                $("#emailDialog").dialog('open');
+            },
+            "Send!": {
+                id: "sendEmailButton",
+                text: "Send!",
+                "class": 'sendButton',
+                click: function() {
+                    $("#sendEmailButton").button("disable");
+                    closeStatus("#emailPreviewSuccess");
+                    closeStatus("#emailPreviewError");
+
+                    var data = {"subject": $("#subject").val(), "body": $("#body").val(), "wid": CourseData.workspace.id};
+
+                    data.users = [];
+                    var settings = CourseData.masterDataTable.fnSettings();
+
+                    for(var index in settings.aiDisplay) {
+                        var dataIndex = settings.aiDisplay[index];
+                        var rcpid = settings.aoData[dataIndex]._aData[CourseData.indexNums["rcpid"]];
+                        data.users.push(rcpid);
+                    }
+
+                    $("#emailPreviewPendingText").text("Sending ...");
+                    $("#emailPreviewPending").show("slideDown");
+
+                    $.ajax({
+                        url: "/data/email/",
+                        type: "POST",
+                        data: data,
+                        success: function(data) {
+                            $("#emailPreviewPending").hide("slideDown");
+                            if(data.result === "success") {
+                                openStatus("#emailPreviewSuccess", "E-Mails Sent Successfully!");
+                            }else {
+                                openStatus("#emailPreviewError", data.error);
+                                $("#sendEmailButton").button("enable");
+                            }
+                        }
+                    });
+                }
+            }
+        },
+        open: function() {
+            closeStatus("#emailPreviewSuccess");
+            closeStatus("#emailPreviewError");
+            $("#sendEmailButton").button("enable");
+        },
+        modal: true,
+        draggable: false,
+        resizable: false,
+        minWidth: 700,
+        title: "E-Mail Preview",
         show: { effect: "fade", speed: 1000 },
         hide: { effect: "fade", speed: 1000 }
     });
