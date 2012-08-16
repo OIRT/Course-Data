@@ -267,8 +267,8 @@ def send_emails(request, preview):
     try:
         template = Template(request.POST["body"])
         users = request.POST.getlist("users[]")
-        data = workspace_table_data(request.POST["wid"])
-        dataHeaders = data[0]
+        headers, data = workspace_table_data(request.POST["wid"])
+        dataHeaders = [header["title"] for header in headers]
         dataDict = dict((d[0], d) for d in data[1:])
 
         for user in users:
@@ -318,17 +318,16 @@ def workspace_table_data(wid):
         uploaddata = merge_uploads_for_students(students, uploads)
 
     # Combine all the data into a table format
-    headers = ['rcpid']
-    headers.extend(userheaders)
+    headers = [{"source": "User Data", "title": "rcpid"}]
+    headers.extend({"source": "User Data", "title": header} for header in userheaders)
     if doGrades:
         gradeheaders = gradebookdata.itervalues().next().keys()
         filler = [''] * len(gradeheaders)
-        headers.extend(gradeheaders)
+        headers.extend({"source": "Gradebook Data", "title": header} for header in gradeheaders)
     if doUploads:
-        headers.extend(uploaddata['_headers'])
+        headers.extend({"source": "Uploaded Data", "title": header} for header in uploaddata['_headers'])
 
     tabledata = []
-    tabledata.append(headers)
 
     for s in students:
         person = s.rcpid
@@ -345,12 +344,12 @@ def workspace_table_data(wid):
 
         tabledata.append(row)
 
-    return tabledata
+    return (headers, tabledata)
 
 
 def table(request, wid):
-    data = workspace_table_data(wid)
-    jsonstr = json.dumps(data)
+    headers, data = workspace_table_data(wid)
+    jsonstr = json.dumps({"headers": headers, "data": data})
     return HttpResponse(jsonstr, mimetype="application/json")
 
 
@@ -397,8 +396,13 @@ def upload(request, wid, display):
 
 
 def export(request, wid):
-    data = workspace_table_data(wid)
+    headers, data = workspace_table_data(wid)
     buffer = StringIO.StringIO()
+
+    for header in headers:
+        buffer.write(str(header["title"]) + ",")
+    buffer.write("\n")
+
     for row in data:
         for cell in row:
             buffer.write(str(cell) + ",")

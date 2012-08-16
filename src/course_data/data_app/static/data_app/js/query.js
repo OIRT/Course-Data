@@ -373,8 +373,18 @@ function tableInitialized() {
 
     VisControl = can.Control({
         init: function() {
+            var hierarchicalColumns = {};
+            var columns = CourseData.masterDataTable.fnSettings().aoColumns;
+            for(var column in columns) {
+                if(hierarchicalColumns.hasOwnProperty(columns[column].sSource)) {
+                    hierarchicalColumns[columns[column].sSource].push({"title": columns[column].sTitle, "visible": columns[column].bVisible});
+                }else {
+                    hierarchicalColumns[columns[column].sSource] = [{"title": columns[column].sTitle, "visible": columns[column].bVisible}];
+                }
+            }
+
             this.element.html(can.view('static/data_app/views/visDialog.ejs', {
-                columns: CourseData.masterDataTable.fnSettings().aoColumns
+                columns: hierarchicalColumns
             }));
 
             $("#visDialog").dialog({
@@ -483,20 +493,16 @@ function tableInitialized() {
 
 function fetchTable() {
     $.ajax( {
-        "dataType": "text",
         "type": "GET",
         "url": "/data/table/" + CourseData.workspaceId + "/",
         cache: false,
-        "success": function(dataStr) {
-            var data = eval('(' + dataStr + ')');
-
-            var tempColumns = data[0];
+        success: function(data) {
             var aoColumns = [];
-            for(var column in tempColumns) {
-                aoColumns.push({"sTitle": tempColumns[column]});
+            for(var column in data.headers) {
+                aoColumns.push({"sTitle": data.headers[column].title, "sSource": data.headers[column].source});
             }
-            data.splice(0, 1); // Remove the list of column headers
-            var aaData = data;
+
+            var aaData = data.data;
 
             CourseData.masterDataTable = $("#userTable").dataTable({
                 "bJQueryUI": true,
