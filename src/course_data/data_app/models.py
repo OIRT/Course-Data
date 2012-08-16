@@ -93,7 +93,7 @@ class Gradebook(Document):
 class Workspace(Document):
     id = ObjectIdField()
     name = StringField(required=True)
-    owners = ListField(StringField(), required=True)
+    owners = ListField(IntField(), required=True)
     rosters = ListField(StringField())
     extras = ListField(StringField())
     displays = ListField(DictField())

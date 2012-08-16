@@ -676,7 +676,7 @@ function addNewWorkspace() {
 
                     CourseData.newWorkspace = {};
                     CourseData.newWorkspace.name = $("#workspaceNameInput").val();
-                    CourseData.newWorkspace.owners = ["Eric"];
+                    CourseData.newWorkspace.owners = [];
                     CourseData.newWorkspace.displays = [];
                     CourseData.newWorkspace.gradebooks = [];
 
