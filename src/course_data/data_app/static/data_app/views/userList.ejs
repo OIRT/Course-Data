@@ -1,0 +1,17 @@
+<h3>Users</h3>
+
+<ul>
+    <% for(var user = 0; user < users.length; user++) { %>
+        <li>
+            <input type="checkbox" class="userListCheckbox" id=<%= "\"usr-" + users[user].rcpid + "\"" %> checked="checked" />
+            <label for=<%= "\"usr-" + users[user].rcpid + "\"" %>><%= users[user].netid %></label>
+        </li>
+    <% } %>
+
+    <li>
+        <input type="text" id="newUser" size="20" />
+        <button id="addUserButton">Add</button>
+        <img id="addingUserImage" src="/static/data_app/images/loading.gif" alt="Adding ..." title="Adding ..." height="16" width="16" style="display:none" />
+        <img id="addingUserFailedImage" src="/static/data_app/images/exclamation.png" alt="Failed to Add" title="Failed to Add" height="16" width="16" style="display:none" />
+    </li>
+</ul>

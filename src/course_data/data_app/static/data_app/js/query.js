@@ -16,10 +16,15 @@ var CourseData = {
     workspaceForcePush: false, // Should we push a new workspace immediately, without waiting
                                // for workspaceUpdateTime to be reached?
 
+    // Next time the workspace is saved, should we update userList or uploadList?
+    updateUserList: false,
+    updateUploadList: false,
+
     newWorkspace: null,
     newWorkspaceId: null,
 
     uploadList: null,
+    userList: null,
 
     // Sets up a function that will push the current workspace up to the
     // server.  However, to avoid multiple requests in a brief period,
@@ -37,6 +42,16 @@ var CourseData = {
                         $("#savingDataImage").hide("fade", function() {
                             $("#dataSavedImage").show("fade");
                         });
+
+                        if(CourseData.updateUserList) {
+                            getUserList();
+                            CourseData.updateUserList = false;
+                        }
+
+                        if(CourseData.updateUploadList) {
+                            getUploadList();
+                            CourseData.updateUploadList = false;
+                        }
                     });
                     clearInterval(CourseData.workspaceUpdater);
                     CourseData.workspaceUpdater = null;
@@ -140,6 +155,38 @@ function updateColumnVisibility() {
     CourseData.masterDataTable.fnAdjustColumnSizing();
 
     updateColumnWorkspace();
+}
+
+function getUploadList() {
+    $("#editWorkspaceButton").attr("disabled", "disabled");
+    CourseData.uploadList = null;
+
+    $.get("/data/upload/list/" + CourseData.workspace.id + "/", function(data) {
+        for(var upload in data) {
+            data[upload].id = data[upload]["_id"]["$oid"];
+        }
+        CourseData.uploadList = data;
+
+        // The edit workspace dialog doesn't work if both the uploaded list and
+        // user list aren't here. So, if the uploadList is the second to load,
+        // it will re-enable the button.  Otherwise the userList code will.
+        if(CourseData.userList !== null) {
+            $("#editWorkspaceButton").removeAttr("disabled");
+        }
+    });
+}
+
+function getUserList() {
+    $("#editWorkspaceButton").attr("disabled", "disabled");
+    CourseData.userList = null;
+
+    $.get("/data/users/workspace/" + CourseData.workspace.id + "/", function(data) {
+        CourseData.userList = data;
+
+        if(CourseData.uploadList !== null) {
+            $("#editWorkspaceButton").removeAttr("disabled");
+        }
+    });
 }
 
 function tableInitialized() {
@@ -482,12 +529,8 @@ function tableInitialized() {
         CourseData.masterDataTable.fnAdjustColumnSizing();
         CourseData.masterDataTable.fnDraw();
 
-        $.get("/data/upload/list/" + CourseData.workspace.id + "/", function(data) {
-            for(var upload in data) {
-                data[upload].id = data[upload]["_id"]["$oid"];
-            }
-            CourseData.uploadList = data;
-        });
+        getUploadList();
+        getUserList();
     });
 }
 
@@ -809,9 +852,39 @@ function setupSectionsList() {
     });
 }
 
+function setupUserList() {
+    $("#userList").html(can.view('static/data_app/views/userList.ejs', {
+        users: CourseData.userList
+    }));
+
+    $("#addUserButton").bind('click', function() {
+        $("#addingUserFailedImage").hide();
+        $("#addingUserImage").show();
+        $.post('/data/users/workspace/add/' + CourseData.workspace.id + '/', {netid: $("#newUser").val()}, function(data) {
+            if(data.status === "success") {
+                CourseData.workspace.owners.push(data.rcpid);
+                CourseData.workspaceForcePush = true; // The workspace should already be up-to-date on the server,
+                                                      // but we'd like to push our change as quickly as possible anyway,
+                                                      // both to fix the status icon and to prevent discrepancies
+
+                $.get("/data/users/workspace/" + CourseData.workspace.id + "/", function(data) {
+                     CourseData.userList = data;
+                     $("#addingUserImage").hide();
+                     setupUserList();
+                });
+            }else {
+                $("#addingUserImage").hide();
+                $("#addingUserFailedImage").show();
+            }
+        });
+    });
+}
+
 function setupEditWorkspace() {
     $("#editWorkspaceName").val(CourseData.workspace.name);
     $("#editDisplayName").val(CourseData.workspace.displays[CourseData.dIndex].name);
+
+    setupUserList();
 
     $("#uploadedFilesList").html(can.view('static/data_app/views/uploadedFiles.ejs', {
         files: CourseData.uploadList
@@ -1110,6 +1183,13 @@ $(document).ready(function() {
                     CourseData.workspace.attr("name", $("#editWorkspaceName").val());
                     CourseData.workspace.displays[CourseData.dIndex].attr("name", $("#editDisplayName").val());
 
+                    $(".userListCheckbox:not(:checked)").each(function(index, el) {
+                        var userId = $(el).attr("id").substring(4);
+                        var userIndex = $.inArray(userId, CourseData.workspace.owners);
+                        CourseData.workspace.owners.splice(userIndex, 1);
+                        CourseData.updateUserList = true;
+                    });
+
                     $(".sectionListCheckbox:not(:checked)").each(function(index, el) {
                         var sectionId = $(el).attr("id").substring(4);
                         var sectionIndex = $.inArray(sectionId, CourseData.workspace.rosters);
@@ -1120,6 +1200,8 @@ $(document).ready(function() {
                         var uploadId = $(el).attr("id").substring(4);
                         $.post("/data/upload/remove/", {workspace: CourseData.workspace.id, upload: uploadId});
                     });
+
+                    CourseData.workspaceForcePush = true;
 
                     $(this).dialog("close");
                 }

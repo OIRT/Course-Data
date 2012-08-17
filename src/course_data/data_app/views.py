@@ -239,10 +239,24 @@ def fetch_one_user(request, attr, id, retformat=""):
 
 
 @ensure_authorized
+@require_POST
+def add_workspace_user(request, wid):
+    ws = Workspace.objects(id=wid).first()
+    user = User.objects(netid=request.POST["netid"]).first()
+    if user is not None and user.rcpid not in ws.owners:
+        ws.owners.append(user.rcpid)
+        ws.save()
+        return HttpResponse(simplejson.dumps({"status": "success", "rcpid": user.rcpid}), mimetype="application/json")
+    else:
+        return HttpResponse(simplejson.dumps({"status": "failure"}), mimetype="application/json")
+
+
+@ensure_authorized
 def fetch_workspace_users(request, wid):
     ws = get_document_or_404(Workspace, id=wid)
-    students = all_workspace_students(ws)
-    jsonstr = documents_to_json(students)
+    rcpids = ws.owners
+    users = User.objects(rcpid__in=rcpids).exclude("courses")
+    jsonstr = documents_to_json(users)
     return HttpResponse(jsonstr, mimetype="application/json")
 
 
