@@ -8,7 +8,7 @@ Before being able to deploy, you'll need to make sure [fabric is installed](http
 
 ## Initial Setup
 
-To initially setup the server (or to clean everything out and start fresh), execute the `bootstrap` command:
+To initially setup the remote server (or to clean everything out and start fresh), execute the `bootstrap` command:
 
     fab production bootstrap
 
@@ -31,3 +31,5 @@ The idea is that this should be the only command that you need to execute to get
 The Apache config files (both the conf and wsgi) are stored under the `apache` directory of this repo.  When updates are made to the wsgi file, they take effect immediately upon deploy.  However, updating the conf file requires an extra step:
 
     fab production update_apache_config
+    
+**This often has to be called if updates don't seem to "take" on the first deploy!**
