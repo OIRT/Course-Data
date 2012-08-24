@@ -19,7 +19,7 @@ def ensure_authorized(orig_func):
         user = get_current_user(request)
 
         if user is not None:
-            if "staff" in user.roles or "faculty" in user.roles:
+            if 'authorized' in user and user.authorized == "true":
                 return orig_func(request, *args, **kwargs)
             else:
                 return HttpResponse("You are not authorized to use this application.", status=401)
