@@ -31,6 +31,8 @@ except ImportError:
 
 TABLE_STUDENT_INCLUDE = ['firstname','lastname','nickname','email','netid']
 
+def included_user_fields():
+    return TABLE_STUDENT_INCLUDE
 
 def all_workspace_students(workspace):
     return User.objects(Q(courses__id__in=workspace.rosters) |
@@ -42,7 +44,7 @@ def all_workspaces_for_user(user):
 
 
 def student_data_table(students):
-    headers = TABLE_STUDENT_INCLUDE
+    headers = included_user_fields()
     studentdata = dict((s.rcpid, []) for s in students)
     for s in students:
         row = []
@@ -155,7 +157,7 @@ def workspace_table_data(wid):
     doGrades = (len(gradebooks) > 0)
     doUploads = (len(uploads) > 0)
 
-    userheaders = TABLE_STUDENT_INCLUDE
+    userheaders = included_user_fields()
     studentdata = student_data_table(students)
     if doGrades:
         gradebookdata = merge_gradebooks_for_students(students, gradebooks)

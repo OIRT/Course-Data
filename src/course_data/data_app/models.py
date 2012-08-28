@@ -19,7 +19,7 @@ class Course(EmbeddedDocument):
     meta = {'allow_inheritance': False}
 
 
-class User(Document):
+class User(DynamicDocument):
     id = ObjectIdField()
     firstname = StringField()
     lastname = StringField()
