@@ -29,10 +29,12 @@ except ImportError:
 # Utility functions
 #####
 
-TABLE_STUDENT_INCLUDE = ['firstname','lastname','nickname','email','netid']
-
 def included_user_fields():
-    return TABLE_STUDENT_INCLUDE
+    m = AppMetadata.objects(collection="users").first()
+    if m:
+        return m.fields
+    else:
+        return []
 
 def all_workspace_students(workspace):
     return User.objects(Q(courses__id__in=workspace.rosters) |

@@ -121,3 +121,12 @@ class UserSubmittedData(Document):
 
     def full_headers(self):
         return [self.shortname+'.'+h for h in self.headers]
+
+class AppMetadata(Document):
+    collection = StringField()
+    fields = ListField(StringField())
+    
+    def __unicode__(self):
+        return self.collection
+
+    meta = {'allow_inheritance': False, 'collection': 'metadata' }
