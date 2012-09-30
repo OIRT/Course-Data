@@ -150,7 +150,8 @@ def workspace_table_data(wid):
     """
     ws = get_document_or_404(Workspace, id=wid)
     students = all_workspace_students(ws)
-    gradebooks = Gradebook.objects(id__in=ws.gradebooks)
+    #gradebooks = Gradebook.objects(id__in=ws.gradebooks)
+    gradebooks = Gradebook.objects(sections__in=ws.rosters)
     uploads = UserSubmittedData.objects(workspaces__contains=wid)
 
     studentdata = {}
@@ -320,7 +321,7 @@ def send_emails(request, preview):
         users = request.POST.getlist("users[]")
         headers, data = workspace_table_data(request.POST["wid"])
         dataHeaders = [header["title"] for header in headers]
-        dataDict = dict((d[0], d) for d in data[1:])
+        dataDict = dict((d[0], d) for d in data[0:])
 
         for user in users:
             contextDict = dict((re.sub("[^A-Za-z0-9_]", "", head), value) for (head, value) in zip(dataHeaders, dataDict[int(user)]))
@@ -328,7 +329,7 @@ def send_emails(request, preview):
 
             if contextDict["email"] is not None and contextDict["email"] is not '':
                 if not preview:
-                    send_mail(request.POST["subject"], template.render(context), "someone@else.com", [contextDict["email"]], fail_silently=False)
+                    send_mail(request.POST["subject"], template.render(context), get_current_user(request).email, [contextDict["email"]], fail_silently=False)
                 else:
                     name = contextDict["firstname"] + " " + contextDict["lastname"]
                     return HttpResponse(simplejson.dumps({"result": "success", "name": name, "email": template.render(context)}), mimetype="application/json")
