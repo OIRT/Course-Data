@@ -127,8 +127,9 @@ function checkCondition(oSettings, aData, iDataIndex, topLevel) {
 
 function calculateIndexNums() {
     var oSettings = CourseData.masterDataTable.fnSettings();
-    CourseData.indexNums = new Array(oSettings.aoColumns.length);
-    for(i = 0; i < CourseData.indexNums.length; i++) {
+    //    CourseData.indexNums = new Array(oSettings.aoColumns.length);
+    CourseData.indexNums = new Object();
+    for(i = 0; i < oSettings.aoColumns.length; i++) {
         CourseData.indexNums[oSettings.aoColumns[i].sTitle] = i;
     }
 }
