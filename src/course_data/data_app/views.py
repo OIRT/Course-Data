@@ -51,7 +51,10 @@ def student_data_table(students):
     for s in students:
         row = []
         for h in headers:
-            row.append(s[h])
+            try:
+                row.append(s[h])
+            except KeyError:
+                row.append("")
         studentdata[s.rcpid].extend(row)
     return studentdata
 
