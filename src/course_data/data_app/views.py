@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.utils import simplejson
 from django.template import Template, Context, TemplateSyntaxError
-from mongohelpers import get_document_or_404, documents_to_json, json_to_document
+from mongohelpers import get_document_or_404, documents_to_json, json_to_document, getdynamic
 from data_app.models import *
 from mongoengine.queryset import Q
 from itertools import chain
@@ -52,7 +52,7 @@ def student_data_table(students):
         row = []
         for h in headers:
             try:
-                row.append(s[h])
+                row.append(getdynamic(s,h))
             except KeyError:
                 row.append("")
         studentdata[s.rcpid].extend(row)
