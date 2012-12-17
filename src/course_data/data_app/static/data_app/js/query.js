@@ -502,6 +502,18 @@ function tableInitialized() {
 
         new VisControl('#visDialogContainer');
 
+        // Handle accordion-ing of column list
+        $("#visDialog").on("click", "h3", function(event) {
+            el = $(this)
+            content = el.next()
+            if(el.hasClass('accordionOpen')) {
+                el.addClass('accordionClosed').removeClass('accordionOpen');
+            } else {
+                el.addClass('accordionOpen').removeClass('accordionClosed');            
+            }
+            content.toggle('fast');
+        });
+
         $("#newFilter").bind("click", function() {
             filters.push({not: false, "selection": "", operator: "<", "text": ""});
             $(".filterSelect").ufd();
