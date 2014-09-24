@@ -47,3 +47,15 @@ def json_to_document(klass, jstr, save=True):
         doc.save()
 
     return (doc, created)
+
+def getdynamic(doc, field):
+    """ This is for reading dynamic fields from a DynamicDocument, since this functionality isn't built in
+        to mongoengine.
+        If it's not a dynamic document/field, it falls back to a normal style read
+    """
+    if doc._dynamic and field in doc._dynamic_fields:
+        return getattr(doc,field)
+    else:
+        return doc[field]
+
+

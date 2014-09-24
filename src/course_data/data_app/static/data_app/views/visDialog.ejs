@@ -2,9 +2,9 @@
     <div style="max-height: 500px">
         <ul id="visList">
             <% for(var source in columns) { %>
-                <li>
-                    <h3><%= source %></h3>
-                    <ul>
+                <li class="accordionList">
+                    <h3 class="accordionClosed"><%= source %></h3>
+                    <ul style="display: none;">
                         <% for(var column in columns[source]) { %>
                             <% var actualColumn = columns[source][column]; %>
                             <li>

@@ -11,13 +11,46 @@ class Student(EmbeddedDocument):
     iclicker_serial = IntField()
 
 
+class Header(EmbeddedDocument):
+    source = StringField()
+    title = StringField()
+
+class Entry(EmbeddedDocument):
+    rcpid = IntField()
+    entries = ListField(DynamicField())
+
+class CourseData(Document):
+    id = StringField()
+    site = StringField()
+    title = StringField()
+    sections = ListField(StringField())
+    items = ListField(EmbeddedDocumentField(Header))
+    entries = ListField(EmbeddedDocumentField(Entry))
+
+    meta = {'allow_inheritance': False, 'collection': 'coursedata'}
+
+    def analytics_title(self):
+        return self.title
+
+    def analytics_headers(self):
+        return [{"source": self.analytics_title()+'.'+h.source, "title": h.title} for h in self.items]
+
+    def analytics_data_by_person(self):
+        headers = [h['title'] for h in self.analytics_headers()]
+        data = {}
+
+        for e in self.entries:
+            for h,v in zip(headers,e.entries):
+                if e.rcpid not in data.keys():
+                    data[e.rcpid] = {}
+                data[e.rcpid][h] = v
+        return data
+
 class Course(EmbeddedDocument):
     id = StringField()
-
     # Necessary so that MongoEngine doesn't require all sorts
-    # of extra weird fields to be there.
-    meta = {'allow_inheritance': False}
-
+    # of extra weird fields to be there.    
+    meta = {'allow_inheritance': False }
 
 class User(DynamicDocument):
     id = ObjectIdField()
@@ -89,6 +122,15 @@ class Gradebook(Document):
         for s in students:
             d[s] = dict(map(None, items, self.scores_for_rcpid(s)))
         return d
+
+    def analytics_title(self):
+        return ''
+        
+    def analytics_headers(self):
+        return [{"source": "Gradebook Data", "title": i.name } for i in self.items]
+        
+    def analytics_data_by_person(self):
+        return self.as_dict()
 
 class Workspace(Document):
     id = ObjectIdField()

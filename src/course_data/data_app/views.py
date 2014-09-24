@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.utils import simplejson
 from django.template import Template, Context, TemplateSyntaxError
-from mongohelpers import get_document_or_404, documents_to_json, json_to_document
+from mongohelpers import get_document_or_404, documents_to_json, json_to_document, getdynamic
 from data_app.models import *
 from mongoengine.queryset import Q
 from itertools import chain
@@ -51,26 +51,11 @@ def student_data_table(students):
     for s in students:
         row = []
         for h in headers:
-            row.append(s[h])
+            try:
+                row.append(getdynamic(s,h))
+            except KeyError:
+                row.append("")
         studentdata[s.rcpid].extend(row)
-    return studentdata
-
-
-def merge_gradebooks_for_students(students,gradebooks):
-    # Unique list of all gradebook headers
-    all_gradebook_items = list(chain.from_iterable([gb.items for gb in gradebooks]))
-    gradebook_headers = list([i.name for i in all_gradebook_items])
-
-    # Initialize a dict containing all students each with all gradebook headers,
-    # and default values of '' for each assignment
-    data = OrderedDict((h, '') for h in gradebook_headers)
-    studentdata = OrderedDict((s.rcpid, data.copy()) for s in students)
-
-    for gb in gradebooks:
-        gbdict = gb.as_dict()
-        for s in studentdata:
-            if s in gbdict:
-                studentdata[s].update(gbdict[s])
     return studentdata
 
 
@@ -143,6 +128,56 @@ def merge_uploads_for_students(students, uploads):
     return data
 
 
+def merge_data_for_people(people, models):
+    """
+        Collect data for a certain set of people from a list of model objects.
+        Merge results from models that have the same name.
+    """
+    
+    # All headers from the models
+    all_headers = list(chain.from_iterable([m.analytics_headers() for m in models]))
+
+    # Initialize a dict containing all people each with all headers,
+    # and default values of '' for each header
+    data = OrderedDict()
+    headers = []
+    for h in all_headers:
+        if h['title'] not in data.keys():
+            data[h['title']] = ''
+            headers.append(h)
+    persondata = dict((p, data.copy()) for p in people)
+    persondata['_headers'] = headers
+
+    for m in models:
+        mdata = m.analytics_data_by_person()
+        for p in people:
+            if p in mdata:
+                persondata[p].update(mdata[p])
+    return persondata
+
+def collect_data_for_people(people, models):
+    """
+        Collect data for a certain set of people from a list of model objects
+        Expand results for people who aren't included in the models' data
+    """
+    all_headers = list(chain.from_iterable([m.analytics_headers() for m in models]))
+    
+    data = {}
+    data['_headers'] = all_headers
+
+    for p in people:
+        data[p] = []
+        for m in models:
+            headers = m.analytics_headers()
+            mdata = m.analytics_data_by_person()
+            if p in mdata.keys():
+                for h in headers:
+                    data[p].append(mdata[p][h['title']])
+            else:
+                data[p].extend(['']*len(headers))
+    
+    return data
+
 def workspace_table_data(wid):
     """
         Collate and return a workspace's data as a list of rows.
@@ -153,32 +188,44 @@ def workspace_table_data(wid):
     #gradebooks = Gradebook.objects(id__in=ws.gradebooks)
     gradebooks = Gradebook.objects(sections__in=ws.rosters)
     uploads = UserSubmittedData.objects(workspaces__contains=wid)
-
+    courses = CourseData.objects(sections__in=ws.rosters)
+    rcpids = [s.rcpid for s in students]
+    
     studentdata = {}
     gradebookdata = {}
     uploaddata = {}
+    coursedata = {}
+
     doGrades = (len(gradebooks) > 0)
     doUploads = (len(uploads) > 0)
+    doCourses = (len(courses) > 0)
 
     userheaders = included_user_fields()
     studentdata = student_data_table(students)
+
     if doGrades:
-        gradebookdata = merge_gradebooks_for_students(students, gradebooks)
+        gradebookdata = merge_data_for_people(rcpids, gradebooks)
+#        gradebookdata = merge_gradebooks_for_students(students, gradebooks)
     if doUploads:
         uploaddata = merge_uploads_for_students(students, uploads)
+    if doCourses:
+        coursedata = collect_data_for_people(rcpids, courses)
 
     # Combine all the data into a table format
     headers = [{"source": "User Data", "title": "rcpid"}]
     headers.extend({"source": "User Data", "title": header} for header in userheaders)
     if doGrades:
-        gradeheaders = gradebookdata.itervalues().next().keys()
-        filler = [''] * len(gradeheaders)
-        headers.extend({"source": "Gradebook Data", "title": header} for header in gradeheaders)
+        headers.extend(gradebookdata['_headers'])
+#        gradeheaders = gradebookdata.itervalues().next().keys()
+#        filler = [''] * len(gradebookdata['_headers'])
+#        headers.extend({"source": "Gradebook Data", "title": header} for header in gradeheaders)
     if doUploads:
         headers.extend({"source": "Uploaded Data", "title": header} for header in uploaddata['_headers'])
+    if doCourses:
+        headers.extend(coursedata['_headers'])
+
 
     tabledata = []
-
     for s in students:
         person = s.rcpid
         row = [person]
@@ -187,12 +234,15 @@ def workspace_table_data(wid):
             if person in gradebookdata.iterkeys():
                 row.extend(gradebookdata[person].values())
             else:
-                row.extend(filler)
+                row.extend(['']*len(gradebookdata['_headers']))
         if doUploads:
             if person in uploaddata.iterkeys():
                 row.extend(uploaddata[person])
-
+        if doCourses:
+            if person in coursedata.iterkeys():
+                row.extend(coursedata[person])
         tabledata.append(row)
+
 
     return (headers, tabledata)
 
